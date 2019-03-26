@@ -1,0 +1,42 @@
+--- 
+title: "TMA4250 Spatial Statistics Exercise 2, Spring 2019"
+date: "`r format(Sys.time(), '%d.%m.%Y')`"
+output:
+  pdf_document: default
+  bookdown::html_document2: default
+  html_document:
+    df_print: paged
+subtitle: 'Group members: Henrik Syversveen Lie, Øyvind Auestad'
+header-includes: \usepackage{float}
+references:
+- id: Omre
+  title: Bayesian Spatial Inversion with Conjugate Prior Models
+  author:
+  - family: Omre
+    given: Henning
+  type: article-journal
+  issued:
+    year: 2019
+    month: 1
+---
+
+
+```{r setup, include = FALSE}
+library(bookdown)
+library(formatR)
+showsol <- FALSE
+library(knitr)
+opts_chunk$set(tidy.opts = list(width.cutoff = 68), tidy = TRUE, warning = FALSE, error = FALSE, message = FALSE, echo = TRUE, fig.pos = 'H')
+```
+
+
+```{r, echo = F, eval = T}
+library(reshape2)
+library(geoR)
+library(ggplot2)
+library(MASS)
+library(cowplot)
+library(fields)
+library(akima)
+library(spatial)
+```
