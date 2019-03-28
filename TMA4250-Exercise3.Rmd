@@ -1,23 +1,14 @@
 --- 
 title: "TMA4250 Spatial Statistics Exercise 2, Spring 2019"
+header-includes: \usepackage{float}
 date: "`r format(Sys.time(), '%d.%m.%Y')`"
 output:
   pdf_document: default
-  bookdown::html_document2: default
   html_document:
     df_print: paged
+  word_document: default
+  bookdown::html_document2: default
 subtitle: 'Group members: Henrik Syversveen Lie, Øyvind Auestad'
-header-includes: \usepackage{float}
-references:
-- id: Omre
-  title: Bayesian Spatial Inversion with Conjugate Prior Models
-  author:
-  - family: Omre
-    given: Henning
-  type: article-journal
-  issued:
-    year: 2019
-    month: 1
 ---
 
 
@@ -52,3 +43,27 @@ Moreover, observations of the lithology distribution {sand, shale} in a geologic
 We assume that the underlying lithology distribution can be represented by a Mosaic RF $\{l(\mathbf{x});\mathbf{x}\in L_D\};l(\mathbf{x})\in\{0,1\}$ represented by the $n$-vector $\mathbf{l}$.
 
 ## a)
+
+Since the $U_i$'s are all independent, $d_i$ depends only on $l_i$. Hence we get
+$$
+\boldsymbol{d} | \boldsymbol{l} \sim p(\boldsymbol{d}|\boldsymbol{l}) = \prod_{i = 1}^n p(d_i | \boldsymbol{l}) = \prod_{i = 1}^n p(d_i | l_i) = \prod_{i = 1}^n
+\begin{cases}
+N(d_i; 0.02, 0.06^2) \ &\textrm{if} \ l_i = 0 \\
+N(d_i; 0.08, 0.06^2) \ &\textrm{if} \ l_i = 1
+\end{cases}
+$$
+```{r, echo = F, eval = T, out.width = "33%"}
+dobs_df <- read.table("https://www.math.ntnu.no/emner/TMA4250/2017v/Exercise3/seismic.dat")
+
+dlist = list(x = 1:75, y = 1:75, z = matrix(dobs_df[,1], nrow = 75, ncol = 75))
+image.plot(dlist)
+```
+
+## b)
+
+
+
+
+
+
+
