@@ -50,7 +50,8 @@ $$
 \begin{cases}
 N(d_i; 0.02, 0.06^2) \ &\textrm{if} \ l_i = 0 \\
 N(d_i; 0.08, 0.06^2) \ &\textrm{if} \ l_i = 1
-\end{cases}
+\end{cases} \\
+= \prod_{i : l_i = 0} N(d_i; 0.02, 0.06^2) \prod_{i:l_i = 1} N(d_i; 0.08, 0.06^2)
 $$
 ```{r, echo = F, eval = T, out.width = "33%"}
 dobs_df <- read.table("https://www.math.ntnu.no/emner/TMA4250/2017v/Exercise3/seismic.dat")
@@ -61,9 +62,17 @@ image.plot(dlist)
 
 ## b)
 
+We now give $\boldsymbol{l}$ a uniform constant prior, $\boldsymbol{l} \sim \textrm{const}$. We obtain the following posterior for $\boldsymbol{l}$
+$$
+\boldsymbol{l} | \boldsymbol{d} \sim \frac{p(\boldsymbol{d} | \boldsymbol{l})}{\sum_{\boldsymbol{l} \in L} p(\boldsymbol{d} | \boldsymbol{l})}
+$$
+Where the expression for the likelihood is given in the previous problem. 
+$$
+p(\boldsymbol{l} | \boldsymbol{d}) = \frac{ \prod_{i : l_i = 0} N(d_i; 0.02, 0.06^2) \prod_{i:l_i = 1} N(d_i; 0.08, 0.06^2) }{\sum_{\boldsymbol{k} \in \{0, 1\}^n} \prod_{i : k_i = 0} N(d_i; 0.02, 0.06^2) \prod_{i:k_i = 1} N(d_i; 0.08, 0.06^2) } \\
+= \frac{ \exp\big(-\frac{1}{2\cdot 0.06^2}\big(\sum_{i:l_i = 0}(d_i - 0.02)^2 + \sum_{i:l_i = 1} (d_i - 0.08)^2\big) \big) }{\sum_{\boldsymbol{k} \in \{0, 1\}^n} \exp\big(-\frac{1}{2\cdot 0.06^2}\big(\sum_{i:k_i = 0}(d_i - 0.02)^2 + \sum_{i:k_i = 1} (d_i - 0.08)^2\big) \big) } 
+$$
 
-
-
-
-
+$$
+\frac{ \prod_{i : l_i = 0} \exp\big(-\frac{1}{2\cdot 0.06^2}(d_i - 0.02)^2\big) \prod_{i:l_i = 1} \exp\big(-\frac{1}{2\cdot 0.06^2}(d_i - 0.08)^2\big)}{\sum_{\boldsymbol{k} \in \{0, 1\}^n} \prod_{i : k_i = 0} \exp\big(-\frac{1}{2\cdot 0.06^2}(d_i - 0.02)^2\big) \prod_{i:k_i = 1} \exp\big(-\frac{1}{2\cdot 0.06^2}(d_i - 0.08)^2\big) } \\
+$$
 
