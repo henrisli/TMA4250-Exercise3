@@ -94,6 +94,6 @@ p(\mathbf{l} | \mathbf{d}) &= \frac{ \prod_{i : l_i = 0} N(d_i; 0.02, 0.06^2) \p
 
 We want to simulate from the posterior Mosaic RF $\{l(\mathbf{x});\mathbf{x}\in L_D|\mathbf{d}\}$. Because we have an independent prior, each point in the Mosaic RF will be independent, and we get the following posterior distribution
 $$[l_i|d_i]\sim p(l_i|d_i) = \frac{p(d_i|l_i)}{\sum_{l_i'\in L} p(d_i|l_i')} = \begin{cases} \frac{N(d_i;0.02,0.06^2)}{N(d_i;0.02,0.06^2)+N(d_i;0.08,0.06^2)}, \text{ if } l_i = 0,\\ \frac{N(d_i;0.08,0.06^2)}{N(d_i;0.02,0.06^2)+N(d_i;0.08,0.06^2)}, \text{ if } l_i = 1\end{cases}; i =1,\dots,n.$$
-This means that we can simulate from the posterior distribution by using a single-site MCMC/Gibbs Simulation algorithm. We implement a version of Algorithm 9 from page 80 of @Omre.
+This means that we can simulate from the posterior distribution by using a single-site MCMC/Gibbs Simulation algorithm. We implement a version of Algorithm 9 from page 80 of 
 
 # References
