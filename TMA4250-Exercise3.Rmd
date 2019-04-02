@@ -157,3 +157,5 @@ image.plot(dlist, main = "Maximum marginal posterior predictor")
 ```
 
 COMMENT ON THE RESULTS
+
+## c)
