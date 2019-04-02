@@ -182,3 +182,20 @@ plot_image <- function(l){
 }
 plot_image(complit)
 ```
+
+TROR DETTE BARE ER BS, SKJØNNER IKKE SÅ MYE AV HVA VI SKAL GJØRE
+```{r, echo = F, eval = T}
+summation = matrix(0, nrow = 66, ncol = 66)
+summation = complit[c(66,1:65),] + complit[c(2:66,1),] + complit[,c(2:66,1)] + complit[,c(66,1:65)]
+summation2 = as.vector(summation)
+likelihood <- function(beta){
+  result = 0
+  for (i in 1:length(summation2)){
+    result = result + beta^summation2[i]
+  }
+  return(result)
+}
+plot(x= seq(-2,2,length.out=100), y =likelihood(seq(-2,2,length.out= 100)))
+dlist = list(x = seq(1,50,length.out = 66), y = seq(1,50,length.out = 66), z = summation)
+image.plot(dlist)
+```
