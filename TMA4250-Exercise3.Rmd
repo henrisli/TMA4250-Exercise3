@@ -159,3 +159,26 @@ image.plot(dlist, main = "Maximum marginal posterior predictor")
 COMMENT ON THE RESULTS
 
 ## c)
+
+
+
+```{r, echo = F, eval = T, out.width = "50%", fig.align = "center", fig.cap = "\\label{fig:complit} Observations of lithology distribution in a geologically comparable domain to the seismic data."}
+complit <- as.matrix(read.table("https://www.math.ntnu.no/emner/TMA4250/2017v/Exercise3/complit.dat"))
+#complit <- t(complit)
+#for (i in 1:66){
+#  complit[i,] = rev(complit[i,])
+#}
+
+dlist = list(x = seq(1,50,length.out = 66), y = seq(1,50,length.out = 66), z = complit)
+image.plot(dlist)
+x = rep(seq(1,50,length.out = 66),66)
+y = rep(seq(1,50,length.out = 66),each = 66)
+plot_image <- function(l){
+  mtrx3d <- data.frame(x = x, y = y, z = ifelse(as.vector(l), "Shale", "Sand"))
+  mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
+  mtrx.melt$value = as.factor(mtrx.melt$value)
+  return(ggplot(mtrx.melt, aes(x = x, y = y, fill = value)) +
+         geom_tile() + scale_fill_manual("Rock type", values=c("dark blue","dark red")))
+}
+plot_image(complit)
+```
