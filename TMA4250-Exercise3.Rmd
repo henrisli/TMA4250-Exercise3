@@ -15,7 +15,7 @@ library(bookdown)
 library(formatR)
 showsol <- FALSE
 library(knitr)
-opts_chunk$set(tidy.opts = list(width.cutoff = 68), tidy = TRUE, warning = FALSE, error = FALSE, message = FALSE, echo = TRUE, fig.pos = 'H')
+opts_chunk$set(tidy.opts = list(width.cutoff = 68), tidy = TRUE, warning = FALSE, error = FALSE, message = FALSE, echo = TRUE, fig.pos = 'htb')
 ```
 
 
@@ -38,10 +38,10 @@ The observations are collected on a regular $(75 \times 75)$ grid $L_D$, and the
 
 Moreover, observations of the lithology distribution {sand, shale} in a geologically comparable domain $\mathcal{D}_c \subset \mathbb{R}^2$ is available. The lithology distribution is collected on a regular $(50\times 50)$ grid $L_{D_c}$, which has the same spacing as $L_D$ over $\mathcal{D}_c$. Here, we retrieve the observations from the same R library MASS in the file _complit.dat_.
 
-We assume that the underlying lithology distribution can be represented by a Mosaic RF $\{l(\mathbf{x});\mathbf{x}\in L_D\};l(\mathbf{x})\in\{0,1\}$ represented by the $n$-vector $\mathbf{l}$.
+We assume that the underlying lithology distribution can be represented by a Mosaic RF $\{l(\mathbf{x});\mathbf{x}\in L_D\};l(\mathbf{x})\in\{0,1\}=\mathbb{L}$ represented by the $n$-vector $\mathbf{l}$.
 
 ## a)
-The seismic data collection procedure defines the likelihood model:
+The seismic data collection procedure defines the response likelihood model:
 $$[d_i|\mathbf{l}] = \begin{cases} 0.02+U_i, \text{ if } l_i = 0 - \text{ sand},\\ 0.08+U_i, \text{ if } l_i = 1 - \text{ shale}\end{cases}; i = 1,\dots,n,$$
 with $U_i, i=1,\dots,n$ i.i.d. $N_1(0,0.06^2)$.
 
@@ -59,13 +59,19 @@ N(d_i; 0.08, 0.06^2) \ &\textrm{if} \ l_i = 1
 \label{eq:lik}
 \end{equation}
 
-We then display the observations as a map.
+We then display the observations as a map in figure \ref{fig:obs}.
 ```{r, echo = F, eval = T, out.width = "50%", fig.align = "center", fig.cap = "\\label{fig:obs} Observed values of $\\mathbf{d}$ from the seismic data."}
 obs <- read.table("https://www.math.ntnu.no/emner/TMA4250/2017v/Exercise3/seismic.dat")[,1]
 
+color_table = tim.colors(64) 
+x = rep(1:75,75)
+y = rep(1:75,each = 75)
+mtrx3d <- data.frame(x = x, y = y, z = obs)
+mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
+ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value)) + scale_fill_gradientn(colours=color_table) + ggtitle("Observed seismic data")
 
-dlist = list(x = 1:75, y = 1:75, z = matrix(obs, nrow = 75, ncol = 75))
-image.plot(dlist)
+#dlist = list(x = 1:75, y = 1:75, z = matrix(obs, nrow = 75, ncol = 75))
+#image.plot(dlist, legend.width = 1.9)
 ```
 
 ## b)
@@ -93,14 +99,12 @@ p = dnorm(obs, 0.08, 0.06^2)/(dnorm(obs, 0.02, 0.06^2) + dnorm(obs, 0.08, 0.06^2
 # Number of points
 n = 75*75
 
-x = rep(1:75,75)
-y = rep(1:75,each = 75)
 plot_image <- function(l){
   mtrx3d <- data.frame(x = x, y = y, z = ifelse(as.vector(l), "Shale", "Sand"))
   mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
   mtrx.melt$value = as.factor(mtrx.melt$value)
   return(ggplot(mtrx.melt, aes(x = x, y = y, fill = value)) +
-         geom_tile() + scale_fill_manual("Rock type", values=c("dark blue","dark red")))
+         geom_raster() + scale_fill_manual("Rock type", values=c("dark blue","dark red")))
 }
 
 
@@ -146,19 +150,99 @@ $$\hat{l_i} = \begin{cases}0, &\text{if } p_i<0.5,\\ 1, &\text{if } p_i >0.5.\en
 
 Below, we have plotted the expecation, variance and MMAP.
 ```{r, echo = F, eval = T, out.width = "33%"}
-dlist = list(x = 1:75, y = 1:75, z = matrix(p, nrow = 75, ncol = 75))
-image.plot(dlist, main = "Expected value of l")
+#dlist = list(x = 1:75, y = 1:75, z = matrix(p, nrow = 75, ncol = 75)
+mtrx3d <- data.frame(x = x, y = y, z = p)
+mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
+ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value)) + scale_fill_gradientn(colours=color_table) + ggtitle("Expected value of l")
+#image.plot(dlist, main = "Expected value of l")
 
-dlist = list(x = 1:75, y = 1:75, z = matrix(p*(1-p), nrow = 75, ncol = 75))
-image.plot(dlist, main = "Variance of l")
+#dlist = list(x = 1:75, y = 1:75, z = matrix(p*(1-p), nrow = 75, ncol = 75))
+mtrx3d <- data.frame(x = x, y = y, z = p*(1-p))
+mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
+ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value)) + scale_fill_gradientn(colours=color_table) + ggtitle("Variance of l")
+#image.plot(dlist, main = "Variance of l")
 
-dlist = list(x = 1:75, y = 1:75, z = matrix(round(p), nrow = 75, ncol = 75))
-image.plot(dlist, main = "Maximum marginal posterior predictor")
+
+plot_image(as.integer(round(p))) + ggtitle("Maximum marginal posterior predictor")
 ```
 
 COMMENT ON THE RESULTS
 
 ## c)
+We then consider a Markov RF prior model for $\{l(\mathbf{x});\mathbf{x}\in L_D\}$, represented by the $n$-vector $\mathbf{l}$, with a neighborhood system $\mathbf{n}_{L}$ consisting of the four closest neighbors of each grid node.
+
+The Markov formulation of the RF is,
+$$p(l_i|l_j;j\in \mathbf{n}_i) = const \times \exp\Big(\beta\sum_{j\in \mathbf{n}_i}I(l_i=l_j)\Big);i=1,\dots,n,$$
+where $I(\cdot)$ is the indicator function.
+
+As an alternative to the Markov formulation, we can formulate the Markov RF prior model with the Gibbs formulation. To do this, we first specify the clique system. The clique system $\mathbf{c}_L : \{\mathbf{c}_1,\dots,\mathbf{c}_{n_c}\}$ will be a two-node clique system where each clique consists of the two nearest nodes in horizontal or vertical direction. Having defined the cliques, we specify the Gibbs formulation of the Markov RF prior model as,
+\begin{equation*}
+\begin{split}
+\mathbf{l} \sim p(\mathbf{l}) &= const\times\prod_{i=1}^nv_{0l}(l_i)\times\prod_{\mathbf{c}\in \mathbf{c}_L}v_{1\mathbf{c}}(l_j;j\in\mathbf{c})\\ 
+&= const \times \prod_{<i,j>}\exp\Big(\beta \sum_{l_i\in\mathbb{L}}I(l_i=l_j)\Big)\\ 
+&= const \times \exp\Big(\beta\sum_{<i,j>} \sum_{l_i\in\mathbb{L}}I(l_i=l_j)\Big),
+\end{split}
+\end{equation*}
+where $<i,j>$ represents all nearest neighbors in the grid $L_D$.
+
+We have a response likelihood model, and a Markov RF prior model, which is a conjugate prior model to the response likelihood model. We want to develop expressions for the posterior model on Gibbs and Markov formulation, so we begin by developing the joint distribution of the spatial variable of interest and the observations,
+\begin{equation*}
+\begin{split}
+\begin{bmatrix}\mathbf{l}\\\mathbf{d}\end{bmatrix} \sim &p(\mathbf{l},\mathbf{d}) = p(\mathbf{d}|\mathbf{l})p(\mathbf{l})\\
+&= const \times \prod_{i=1}^n p(d_i|l_i) \times \prod_{i=1}^n v_{0l}(l_i) \prod_{\mathbf{c}\in \mathbf{c}_L} v_{1\mathbf{c}}(l_j;j\in\mathbf{c})\\
+&= const \times \prod_{i=1,l_i=0}^n N(d_i;0.02,0.06^2) \prod_{i=1,l_i=1}^n N(d_i;0.08,0.06^2) \times \exp\Big(\beta\sum_{<i,j>} \sum_{l_i\in\mathbb{L}}I(l_i=l_j)\Big),
+\end{split}
+\end{equation*}
+
+
+\begin{equation*}
+\begin{split}
+\bigg[\begin{matrix}l_i\\\mathbf{d}\end{matrix}\Big|\mathbf{l}_{-i}\bigg] \sim &p(l_i,\mathbf{d}|\mathbf{l}_{-i}) = p(\mathbf{d}|\mathbf{l})p(l_i|\mathbf{l}_{-i})\\
+&= const \times \prod_{i=1,l_i=0}^n N(d_i;0.02,0.06^2) \prod_{i=1,l_i=1}^n N(d_i;0.08,0.06^2) \times \exp\Big(\beta\sum_{j\in \mathbf{n}_i} I(l_i=l_j)\Big), \\
+&i = 1,2,\dots,n,
+\end{split}
+\end{equation*}
+where the former is the Gibbs formulation and the latter is the Markov formulation of the joint model. The posterior model for the Markov model formulation is obtained by first dividing by $p(\mathbf{d}_{-i}|\mathbf{l}_{-i})$ and further computing the normalizing constant as $[p(d_i|\mathbf{l}_{-i})]^{-1}$,
+\begin{equation*}
+\begin{split}
+\bigg[l_i\Big|\begin{matrix}\mathbf{d}\\\mathbf{l}_{-i}\end{matrix}\bigg] \sim &p(l_i|\mathbf{d},\mathbf{l}_{-i}) = p(l_i|d_i,l_j,j\in \mathbf{n}_i^l)\\
+&= \Bigg[\sum_{l_i'\in \mathbb{L}} p(d_i|l_i')v_{0l}(l_i')w_l(l_i'|l_j;j\in \mathbf{n}_i^l)\Bigg]^{-1}\times p(d_i|l_i) v_{0l}(l_i)w_l(l_i|l_j;j\in \mathbf{n}_i^l)\\
+&=\frac{p(d_i|l_i)\times \exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_i=l_j)\Big)}{N(d_i;0.02,0.06^2)\exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_j=0)\Big)+N(d_i;0.08,0.06^2)\exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_j=1)\Big)}\\
+&i = 1,2,\dots,n,
+\end{split}
+\end{equation*}
+
+The corresponding expression for the posterior model on the Gibbs formulation will be,
+\begin{equation*}
+\begin{split}
+[\mathbf{l}|\mathbf{d}] \sim p(\mathbf{l}|\mathbf{d}) = ...
+\end{split}
+\end{equation*}
+
+
+To simulate realizations from $\{[l(\mathbf{x}|\mathbf{d}];\mathbf{x}\in L\}$, we need to use an iterative algorithm. The most frequently used algorithm is a McMC/Gibbs algorithm with a single-site proposal pdf based on the Markov formulation of the Markov RF. We implement the following algorithm:
+\begin{align*}
+&\text{Define } g(\mathbf{l}'|\mathbf{l}):\\
+&i \sim Uni[1,2,\dots,n]\\
+&l_i' \sim p(l_i|d_i,l_j;j\in \mathbf{n}_i)\\
+&\mathbf{l}' = (l_1,\dots,l_{i-1},l_i',l_{i+1},\dots,l_n)\\
+&\text{Initiate:}\\
+&\mathbf{l}^0 \text{ such that } p(\mathbf{l}^0|\mathbf{d}) > 0\\
+&\text{do for } i=1,2,\dots\\
+&\text{Generate: } \mathbf{l}^i \sim g(\mathbf{l}|\mathbf{l}^{i-1})\\
+&\text{end do}
+\end{align*}
+Asymptotically as $i\rightarrow\infty$ then $\mathbf{l}^i \rightarrow \mathbf{l}^s \sim p(\mathbf{l}|\mathbf{d})$.
+
+A prediction of the spatial variable, represented by the $n$-vector $\hat{\mathbf{l}}$ is usually defined based on a marginal maximum posteriori criterion:
+$$\hat{\mathbf{l}} = \bigg[\hat{l}_i = \underset{l_i\in\mathbb{L}}{\operatorname{arg max}}\{p(l_i|\mathbf{d}\}\bigg]_{i=1,\dots,n}.$$
+THe associated uncertainty quantification is provided by probability spatial variables, $\{p(l(\mathbf{x}) = l|\mathbf{d});\mathbf{x}\in L_D\}$, represented by the $n$-vector $\mathbf{p}_l$ for each $l\in \mathbb{L}$,
+$$\mathbf{p}_l = [p_{li} = p(l_i=l|\mathbf{d})]_{i=1,\dots,n}.$$
+We then note that the expected value $E(\mathbf{l}|\mathbf{d}) = \mathbf{p}_l$ and the diagonal terms of $\text{Var}(\mathbf{l}|\mathbf{d})$ will be $\mathbf{p}_{li}(1-\mathbf{p}_{li}), i=1,\dots,n$.
+
+Both the prediction and probability spatial variables must be assessed by sampling based inference, i.e. we generate a set of realizations $\mathbf{l}^s;s=1,2,\dots,n_s$ and assess them by counting estimators.
+
+Now we want to use data from a geologically comparable domain to estimate $\beta$ by a maximum pseudo-likelihood process. First, we display the observations from the domain $D_c$ as a map in figure \ref{fig:complit}.
 
 
 
@@ -169,8 +253,8 @@ complit <- as.matrix(read.table("https://www.math.ntnu.no/emner/TMA4250/2017v/Ex
 #  complit[i,] = rev(complit[i,])
 #}
 
-dlist = list(x = seq(1,50,length.out = 66), y = seq(1,50,length.out = 66), z = complit)
-image.plot(dlist)
+#dlist = list(x = seq(1,50,length.out = 66), y = seq(1,50,length.out = 66), z = complit)
+#image.plot(dlist)
 x = rep(seq(1,50,length.out = 66),66)
 y = rep(seq(1,50,length.out = 66),each = 66)
 plot_image <- function(l){
@@ -184,18 +268,22 @@ plot_image(complit)
 ```
 
 TROR DETTE BARE ER BS, SKJØNNER IKKE SÅ MYE AV HVA VI SKAL GJØRE
-```{r, echo = F, eval = T}
-summation = matrix(0, nrow = 66, ncol = 66)
-summation = complit[c(66,1:65),] + complit[c(2:66,1),] + complit[,c(2:66,1)] + complit[,c(66,1:65)]
-summation2 = as.vector(summation)
+```{r, echo = F, eval = T, out.width = "33%"}
+complit.vec = as.vector(complit)
+neighbors = complit[c(66,1:65),] + complit[c(2:66,1),] + complit[,c(2:66,1)] + complit[,c(66,1:65)]
+neighbors.vec = as.vector(neighbors)
+equal.neighbors = complit.vec*neighbors.vec+(1-complit.vec)*(4-neighbors.vec)
 likelihood <- function(beta){
-  result = 0
-  for (i in 1:length(summation2)){
-    result = result + beta^summation2[i]
-  }
-  return(result)
+  result = sum(beta*equal.neighbors - log(sum(exp(beta*equal.neighbors))))
+  #for (i in 1:(66*66)){
+  #  result = result + beta*equal.neighbors[i] - log(sum(exp(beta*equal.neighbors)))
+  #}
+  return(-result)
 }
-plot(x= seq(-2,2,length.out=100), y =likelihood(seq(-2,2,length.out= 100)))
-dlist = list(x = seq(1,50,length.out = 66), y = seq(1,50,length.out = 66), z = summation)
+plot(x= seq(-200,200,length.out=1000), y =sapply(seq(-200,200,length.out= 1000),likelihood))
+equal.neighbors = complit.vec*neighbors.vec+(1-complit.vec)*(4-neighbors.vec)
+dlist = list(x = seq(1,50,length.out = 66), y = seq(1,50,length.out = 66), z = neighbors)
+image.plot(dlist)
+dlist = list(x = seq(1,50,length.out=66),y=seq(1,50,length.out=66),z=matrix(equal.neighbors,ncol=66))
 image.plot(dlist)
 ```
