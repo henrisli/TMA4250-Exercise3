@@ -140,7 +140,7 @@ plot_image(l)
 ```
 We see that they are all very similar, and they look reasonable when compared to the observations in figure \ref{fig:obs}. To expand on our analysis, we want to develop expressions for the expectation $E\{\mathbf{l}|\mathbf{d}\}$ and the variances in the diagonal terms of the matrix $\text{Var}\{\mathbf{l}|\mathbf{d}\}$.
 
-We know that each point is independent, and each point conditioned on the observation in that point has a Bernoulli distribution with parameter $p_i$. From theory, we know that if $l_i\sim \text{Bernoulli}(p_i)$, then $E(l_i) = p_i$ and $Var(l_i) = p_i(1-p_i)$. This gives 
+We know that each point is independent, and each point conditioned on the observation in that point has a Bernoulli distribution with parameter $p_i$. From theory, we know that if $l_i|d_i \sim \text{Bernoulli}(p_i)$, then $E(l_i|d_i) = p_i$ and $Var(l_i|p_i) = p_i(1-p_i)$. This gives 
 $$E\{\mathbf{l}|\mathbf{d}\} = \mathbf{p} = (p_1,\dots,p_n), \quad \text{Var}\{l_i|d_i\} = p_i(1-p_i), i=1,\dots,n.$$
 
 In addition, we want to develop an expression for the maximum marginal posterior predictor $$\text{MMAP}\{\mathbf{l}|\mathbf{d}\} = \hat{\mathbf{l}} = \bigg[\hat{l_i} = \underset{l_i\in\mathbb{L}}{\operatorname{arg max}}\{p(l_i|d_i)\} \bigg]_{i=1,\dots,n}.$$
@@ -167,6 +167,7 @@ plot_image(as.integer(round(p))) + ggtitle("Maximum marginal posterior predictor
 ```
 
 COMMENT ON THE RESULTS
+INTERPRET $E(\mathbf{l}|\mathbf{d})$: $E(\mathbf{l}|\mathbf{d})$ is the function of $\mathbf{d}$ which, when predicting $l_i$, attains the minimum squared error. That is, $E(l_i - x)^2$, attains its minimum at $x = E(\mathbf{l_i | \mathbf{d}})$ when $x$ is constrained to be a function of $\mathbf{d}$.
 
 ## c)
 We then consider a Markov RF prior model for $\{l(\mathbf{x});\mathbf{x}\in L_D\}$, represented by the $n$-vector $\mathbf{l}$, with a neighborhood system $\mathbf{n}_{L}$ consisting of the four closest neighbors of each grid node.
