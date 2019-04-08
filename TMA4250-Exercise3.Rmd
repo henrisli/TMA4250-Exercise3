@@ -36,13 +36,16 @@ This problem is based on observations of seismic data over a domain $\mathcal{D}
 
 The observations are collected on a regular $(75 \times 75)$ grid $L_D$, and the seismic data are denoted $\{d(\mathbf{x}); \mathbf{x} \in L_D\};d(\mathbf{x})\in \mathbb{R}$, represented by the $n$-vector $\mathbf{d}$. We retrieve the observations from the R library MASS in the file _seismic.dat_. 
 
-Moreover, observations of the lithology distribution {sand, shale} in a geologically comparable domain $\mathcal{D}_c \subset \mathbb{R}^2$ is available. The lithology distribution is collected on a regular $(50\times 50)$ grid $L_{D_c}$, which has the same spacing as $L_D$ over $\mathcal{D}_c$. Here, we retrieve the observations from the same R library MASS in the file _complit.dat_.
+Moreover, observations of the lithology distribution {sand, shale} in a geologically comparable domain $\mathcal{D}_c \subset \mathbb{R}^2$ is available. The lithology distribution is collected on a regular $(66\times 66)$ grid $L_{D_c}$, which has the same spacing as $L_D$ over $\mathcal{D}_c$. Here, we retrieve the observations from the same R library MASS in the file _complit.dat_.
 
 We assume that the underlying lithology distribution can be represented by a Mosaic RF $\{l(\mathbf{x});\mathbf{x}\in L_D\};l(\mathbf{x})\in\{0,1\}=\mathbb{L}$ represented by the $n$-vector $\mathbf{l}$.
 
 ## a)
 The seismic data collection procedure defines the response likelihood model:
-$$[d_i|\mathbf{l}] = \begin{cases} 0.02+U_i, \text{ if } l_i = 0 - \text{ sand},\\ 0.08+U_i, \text{ if } l_i = 1 - \text{ shale}\end{cases}; i = 1,\dots,n,$$
+\begin{equation}
+[d_i|\mathbf{l}] = \begin{cases} 0.02+U_i, \text{ if } l_i = 0 - \text{ sand},\\ 0.08+U_i, \text{ if } l_i = 1 - \text{ shale}\end{cases}; i = 1,\dots,n,
+\label{eq:obs}
+end{equation}
 with $U_i, i=1,\dots,n$ i.i.d. $N_1(0,0.06^2)$.
 
 
@@ -146,7 +149,7 @@ $$E\{\mathbf{l}|\mathbf{d}\} = \mathbf{p} = (p_1,\dots,p_n), \quad \text{Var}\{l
 In addition, we want to develop an expression for the maximum marginal posterior predictor $$\text{MMAP}\{\mathbf{l}|\mathbf{d}\} = \hat{\mathbf{l}} = \bigg[\hat{l_i} = \underset{l_i\in\mathbb{L}}{\operatorname{arg max}}\{p(l_i|d_i)\} \bigg]_{i=1,\dots,n}.$$
 
 Because $[l_i|d_i]$ is a Bernoulli distributed variable with parameter $p_i$, we get
-$$\hat{l_i} = \begin{cases}0, &\text{if } p_i<0.5,\\ 1, &\text{if } p_i >0.5.\end{cases}$$
+$$\hat{l}_i = \begin{cases}0, &\text{if } p_i<0.5,\\ 1, &\text{if } p_i >0.5.\end{cases}$$
 
 Below, we have plotted the expecation, variance and MMAP.
 ```{r, echo = F, eval = T, out.width = "33%"}
@@ -212,6 +215,7 @@ where the former is the Gibbs formulation and the latter is the Markov formulati
 &i = 1,2,\dots,n,
 \end{split}
 \end{equation*}
+with $p(d_i|l_i)$ as in equation \ref{eq:obs}.
 
 The corresponding expression for the posterior model on the Gibbs formulation will be,
 \begin{equation*}
@@ -222,7 +226,8 @@ The corresponding expression for the posterior model on the Gibbs formulation wi
 
 
 To simulate realizations from $\{[l(\mathbf{x}|\mathbf{d}];\mathbf{x}\in L\}$, we need to use an iterative algorithm. The most frequently used algorithm is a McMC/Gibbs algorithm with a single-site proposal pdf based on the Markov formulation of the Markov RF. We implement the following algorithm:
-\begin{align*}
+\begin{equation}
+\begin{split}
 &\text{Define } g(\mathbf{l}'|\mathbf{l}):\\
 &i \sim Uni[1,2,\dots,n]\\
 &l_i' \sim p(l_i|d_i,l_j;j\in \mathbf{n}_i)\\
@@ -232,12 +237,14 @@ To simulate realizations from $\{[l(\mathbf{x}|\mathbf{d}];\mathbf{x}\in L\}$, w
 &\text{do for } i=1,2,\dots\\
 &\text{Generate: } \mathbf{l}^i \sim g(\mathbf{l}|\mathbf{l}^{i-1})\\
 &\text{end do}
-\end{align*}
+\end{split}
+\label{eq:alg}
+\end{equation}
 Asymptotically as $i\rightarrow\infty$ then $\mathbf{l}^i \rightarrow \mathbf{l}^s \sim p(\mathbf{l}|\mathbf{d})$.
 
 A prediction of the spatial variable, represented by the $n$-vector $\hat{\mathbf{l}}$ is usually defined based on a marginal maximum posteriori criterion:
 $$\hat{\mathbf{l}} = \bigg[\hat{l}_i = \underset{l_i\in\mathbb{L}}{\operatorname{arg max}}\{p(l_i|\mathbf{d}\}\bigg]_{i=1,\dots,n}.$$
-THe associated uncertainty quantification is provided by probability spatial variables, $\{p(l(\mathbf{x}) = l|\mathbf{d});\mathbf{x}\in L_D\}$, represented by the $n$-vector $\mathbf{p}_l$ for each $l\in \mathbb{L}$,
+The associated uncertainty quantification is provided by probability spatial variables, $\{p(l(\mathbf{x}) = l|\mathbf{d});\mathbf{x}\in L_D\}$, represented by the $n$-vector $\mathbf{p}_l$ for each $l\in \mathbb{L}$,
 $$\mathbf{p}_l = [p_{li} = p(l_i=l|\mathbf{d})]_{i=1,\dots,n}.$$
 We then note that the expected value $E(\mathbf{l}|\mathbf{d}) = \mathbf{p}_l$ and the diagonal terms of $\text{Var}(\mathbf{l}|\mathbf{d})$ will be $\mathbf{p}_{li}(1-\mathbf{p}_{li}), i=1,\dots,n$.
 
@@ -245,19 +252,17 @@ Both the prediction and probability spatial variables must be assessed by sampli
 
 Now we want to use data from a geologically comparable domain to estimate $\beta$ by a maximum pseudo-likelihood process. First, we display the observations from the domain $D_c$ as a map in figure \ref{fig:complit}.
 
-
-
 ```{r, echo = F, eval = T, out.width = "50%", fig.align = "center", fig.cap = "\\label{fig:complit} Observations of lithology distribution in a geologically comparable domain to the seismic data."}
 complit <- as.matrix(read.table("https://www.math.ntnu.no/emner/TMA4250/2017v/Exercise3/complit.dat"))
-#complit <- t(complit)
-#for (i in 1:66){
-#  complit[i,] = rev(complit[i,])
-#}
+complit <- t(complit)
+for (i in 1:66){
+  complit[i,] = rev(complit[i,])
+}
 
 #dlist = list(x = seq(1,50,length.out = 66), y = seq(1,50,length.out = 66), z = complit)
 #image.plot(dlist)
-x = rep(seq(1,50,length.out = 66),66)
-y = rep(seq(1,50,length.out = 66),each = 66)
+x = rep(seq(1,66),66)
+y = rep(seq(1,66),each = 66)
 plot_image <- function(l){
   mtrx3d <- data.frame(x = x, y = y, z = ifelse(as.vector(l), "Shale", "Sand"))
   mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
@@ -267,24 +272,156 @@ plot_image <- function(l){
 }
 plot_image(complit)
 ```
+Then, we define the distribution of the vector $\mathbf{l}$, given the model parameter $\beta$,
 
-TROR DETTE BARE ER BS, SKJØNNER IKKE SÅ MYE AV HVA VI SKAL GJØRE
+$$\mathbf{l}\sim p(\mathbf{l};\beta) = const \times \prod_{i=1}^n \exp\Big(\beta \sum_{j\in \mathbf{n}_i}I(l_i=l_j)\Big),$$
+which gives the following,
+$$[l_i|l_j;j\in \mathbf{n}_i] \sim p(l_i|l_j;j\in\mathbf{n}_i) = \bigg[\sum_{l_i'\in\mathbb{L}}\exp\big(\beta\sum_{j\in\mathbf{n}_i}I(l_i'=l_j)\big)\bigg]^{-1}\times \exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_i=l_j)\Big).$$
+Then, we can define the pseudo-likelihood of observing the data, given the parameter $\beta$,
+$$\hat{p}(\mathbf{d};\beta) \approx const \times \prod_{i=1}^n \sum_{[l_i';l_j'\in\mathbf{n}_i]\in\mathbb{L}} \prod_{j=i;j\in\mathbf{n}_i} p(d_j|l_j')\times p(l_i'|l_j';j\in\mathbf{n}_i).$$
+Because we assume exact observations of the underlying lithology in figure \ref{fig:complit}, we have the following likelihood,
+$$[d_i|l_i]\sim p(d_i|l_i) = \delta_{d_i}(l_i),$$
+which is inserted into the pseudo-likelihood, together with the distribution of $\mathbf{l}$ to achieve
+$$\hat{p}(\mathbf{d};\beta) \propto \prod_{i=1}^n \bigg[\sum_{l_i'\in\mathbb{L}}\exp\big(\beta\sum_{j\in\mathbf{n}_i}I(l_i'=l_j)\big)\bigg]^{-1}\times \exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_i=l_j)\Big).$$
+To find the optimal $\beta$, we maximize the logarithm of this pseudo-likelihood, giving
+$$\hat{\beta} = \underset{\beta}{\operatorname{arg max}} \{\log(\hat{p}(\mathbf{d};\beta)\} = \underset{\beta}{\operatorname{arg max}} \bigg\{\sum_{i=1}^n\bigg(\beta\big[\sum_{j\in\mathbf{n}_i}I(l_i=l_j)\big]-\log\Big[\sum_{l_i'\in\mathbb{L}}\exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_i=l_i)\Big)\Big]\bigg)\bigg\}.$$
 ```{r, echo = F, eval = T, out.width = "33%"}
 complit.vec = as.vector(complit)
 neighbors = complit[c(66,1:65),] + complit[c(2:66,1),] + complit[,c(2:66,1)] + complit[,c(66,1:65)]
 neighbors.vec = as.vector(neighbors)
 equal.neighbors = complit.vec*neighbors.vec+(1-complit.vec)*(4-neighbors.vec)
-likelihood <- function(beta){
-  result = sum(beta*equal.neighbors - log(sum(exp(beta*equal.neighbors))))
-  #for (i in 1:(66*66)){
-  #  result = result + beta*equal.neighbors[i] - log(sum(exp(beta*equal.neighbors)))
-  #}
+loglikelihood <- function(beta){
+  result = sum(beta*equal.neighbors - log(exp(beta*equal.neighbors) + exp(beta*(4-equal.neighbors))))
   return(-result)
 }
-plot(x= seq(-200,200,length.out=1000), y =sapply(seq(-200,200,length.out= 1000),likelihood))
-equal.neighbors = complit.vec*neighbors.vec+(1-complit.vec)*(4-neighbors.vec)
-dlist = list(x = seq(1,50,length.out = 66), y = seq(1,50,length.out = 66), z = neighbors)
-image.plot(dlist)
-dlist = list(x = seq(1,50,length.out=66),y=seq(1,50,length.out=66),z=matrix(equal.neighbors,ncol=66))
-image.plot(dlist)
+optimal = optim(1,loglikelihood, lower = 0)
+beta = optimal$par
+#plot(x= seq(0,3,length.out=1000), y =sapply(seq(0,3,length.out= 1000),loglikelihood))
+#equal.neighbors = complit.vec*neighbors.vec+(1-complit.vec)*(4-neighbors.vec)
+#dlist = list(x = seq(1,50,length.out = 66), y = seq(1,50,length.out = 66), z = neighbors)
+#image.plot(dlist)
+#dlist = list(x = seq(1,50,length.out=66),y=seq(1,50,length.out=66),z=matrix(equal.neighbors,ncol=66))
+#image.plot(dlist)
+```
+We use wrapping boundary conditions on the data displayed in figure \ref{fig:complit} and estimate $\beta$ by the procedure above using the R function `optim()` to find the maximum pseudo-loglikelihood. This gives $\hat{\beta} =$ `r round(beta,2)`.
+
+To assess the posterior model $p(\mathbf{l}|\mathbf{d})$ of the seismic data, we use algorithm \ref{eq:alg} to simulate from the posterior distribution. Because this is an MCMC algorithm, we need some way to justify that our algorithm has converged. To do this, we run three simulations, one starting with $\{l_i=0\}_{i=1,\dots,n}$, one starting with $\{l_i=1\}_{i=1,\dots,n}$ and one looking like a chess board. We then display the proportion of nodes with $l_i=1$ for each iteration in the algorithm. 
+
+```{r, echo = F, eval = T, out.width = "50%", fig.align = "center", fig.cap = "\\label{fig:convergence} Proportion of nodes with $l_i=1$ for three different MCMC chains, one starting with all $l_i=0$, one starting with all $l_i=1$ and one starting as a chess board."}
+calculate_neighbors = function(x){
+  len = as.integer(sqrt(length(x)))
+  mat = matrix(x, nrow = len)
+  neighbors = mat[c(len,1:(len-1)),] + mat[c(2:len,1),] + mat[,c(2:len,1)] + mat[,c(len,1:(len-1))]
+  return(as.vector(neighbors))
+}
+
+simulate_posterior_proportions = function(beta, l_0, iterations){
+  l = l_0
+  n = length(l_0)
+  proportion = rep(NA,iterations)
+  for (j in 1:iterations){
+    i = sample(1:n,1)
+    neighbor = calculate_neighbors(l)[i]
+    
+    p = dnorm(obs[i],0.08,0.06^2)*exp(beta*neighbor)/(dnorm(obs[i],0.02,0.06^2)*exp(beta*(4-neighbor)) + dnorm(obs[i],0.08,0.06^2)*exp(beta*neighbor))
+
+    l[i] = rbinom(1,1,p)
+    proportion[j] = sum(l)/n
+    
+  }
+  return(proportion)
+}
+
+simulate_posterior = function(beta, l_0, iterations){
+  l = l_0
+  n = length(l_0)
+  for (j in 1:iterations){
+    i = sample(1:n,1)
+    neighbor = calculate_neighbors(l)[i]
+    
+    p = dnorm(obs[i],0.08,0.06^2)*exp(beta*neighbor)/(dnorm(obs[i],0.02,0.06^2)*exp(beta*(4-neighbor)) + dnorm(obs[i],0.08,0.06^2)*exp(beta*neighbor))
+
+    l[i] = rbinom(1,1,p)
+  }
+  return(l)
+}
+
+iter = 80000
+sim0 = simulate_posterior_proportions(beta, rep(0,75*75),iter)
+sim1 = simulate_posterior_proportions(beta, rep(1,75*75),iter)
+sim2 = simulate_posterior_proportions(beta, c(rep(0:1,floor(75*75/2)),1),iter)
+df = data.frame(x=1:iter,y1 = sim0, y2 = sim1, y3 = sim2)
+ggplot(data = df, aes(x=x)) + geom_line(aes(y = y1, col = "0 initial")) + geom_line(aes(y = y2, col = "1 initial")) + geom_line(aes(y = y3, col = "Chess board")) + theme_bw() + xlab("Iteration") + ylab("Proportion of l_i=1")
+#plot(x, sim0$proportion)
+#lines(x, sim1$proportion)
+#plot(x,sim0$proportion,type="l",col="red")
+#plot(x,sim1$proportion,col="green")
+#x = rep(seq(1,75),75)
+#y = rep(seq(1,75),each = 75)
+#plot_image(sim0$l)
+#plot_image(sim1$l)
+```
+
+From figure \ref{fig:convergence}, we see that after about 60000 iterations, the algorithm seems to converge. Going forward, when simulating from the posterior distribution, we therefore use 60000 iterations in the MCMC chain.
+
+We then display 10 independent realizations as maps below.
+```{r, echo = F, eval = T, out.width = "20%"}
+mat = matrix(0,ncol = 75*75, nrow = 10)
+
+for (i in 1:10){
+  mat[i,] = simulate_posterior(beta, mat[i,], 60000)
+  print(i)
+}
+x = rep(seq(1,75),75)
+y = rep(seq(1,75),each = 75)
+plot_image(mat[1,])
+plot_image(mat[2,])
+plot_image(mat[3,])
+plot_image(mat[4,])
+plot_image(mat[5,])
+plot_image(mat[6,])
+plot_image(mat[7,])
+plot_image(mat[8,])
+plot_image(mat[9,])
+plot_image(mat[10,])
+```
+
+
+WANT TO DISPLAY EXP VAR AND MMAP.
+
+```{r, echo = F, eval = T, out.width = "33%"}
+simulations = 100
+iterations = 600
+mat = matrix(0,ncol = 75*75, nrow = simulations)
+
+for (i in 1:simulations){
+  mat[i,] = simulate_posterior(beta, mat[i,], iterations)
+  #print(i)
+}
+#simulated = apply(mat,1,simulate_posterior,beta=beta,iterations=2000)
+#plot_image(mat[1,])
+#plot_image(mat[2,])
+#plot_image(mat[3,])
+#plot_image(mat[4,])
+#plot_image(mat[5,])
+Expected = apply(mat,2,mean)
+Var = Expected*(1-Expected)
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+MMAP = apply(mat,2,Mode)
+
+
+mtrx3d <- data.frame(x = x, y = y, z = Expected)
+mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
+ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value)) + scale_fill_gradientn(colours=color_table) + ggtitle("Expected value of l")
+
+
+mtrx3d <- data.frame(x = x, y = y, z = Var)
+mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
+ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value)) + scale_fill_gradientn(colours=color_table) + ggtitle("Variance of l binomial")
+
+plot_image(MMAP) + ggtitle("MMAP")
+
 ```
