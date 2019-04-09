@@ -155,18 +155,13 @@ $$\hat{l}_i = \begin{cases}0, &\text{if } p_i<0.5,\\ 1, &\text{if } p_i >0.5.\en
 
 Below, we have plotted the expecation, variance and MMAP.
 ```{r, echo = F, eval = T, out.width = "33%"}
-#dlist = list(x = 1:75, y = 1:75, z = matrix(p, nrow = 75, ncol = 75)
 mtrx3d <- data.frame(x = x, y = y, z = p)
 mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
 ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value)) + scale_fill_gradientn(colours=color_table) + ggtitle("Expected value of l") + coord_fixed(ratio=1) +  theme(axis.title.x = element_blank(), axis.title.y = element_blank())
-#image.plot(dlist, main = "Expected value of l")
 
-#dlist = list(x = 1:75, y = 1:75, z = matrix(p*(1-p), nrow = 75, ncol = 75))
 mtrx3d <- data.frame(x = x, y = y, z = p*(1-p))
 mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
 ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value)) + scale_fill_gradientn(colours=color_table) + ggtitle("Variance of l") + coord_fixed(ratio=1) +  theme(axis.title.x = element_blank(), axis.title.y = element_blank())
-#image.plot(dlist, main = "Variance of l")
-
 
 plot_image(as.integer(round(p))) + ggtitle("Maximum marginal posterior predictor") + coord_fixed(ratio=1) +  theme(axis.title.x = element_blank(), axis.title.y = element_blank())
 ```
@@ -185,21 +180,21 @@ As an alternative to the Markov formulation, we can formulate the Markov RF prio
 \begin{equation*}
 \begin{split}
 \mathbf{l} \sim p(\mathbf{l}) &= const\times\prod_{i=1}^nv_{0l}(l_i)\times\prod_{\mathbf{c}\in \mathbf{c}_L}v_{1\mathbf{c}}(l_j;j\in\mathbf{c})\\ 
-&= const \times \prod_{<i,j>}\exp\Big(\beta \sum_{l_i\in\mathbb{L}}I(l_i=l_j)\Big)\\ 
-&= const \times \exp\Big(\beta\sum_{<i,j>} \sum_{l_i\in\mathbb{L}}I(l_i=l_j)\Big),
+&= const \times \prod_{<i,j>}\exp\Big(\beta I(l_i=l_j)\Big)\\ 
+&= const \times \exp\Big(\beta\sum_{<i,j>} I(l_i=l_j)\Big),
 \end{split}
 \end{equation*}
-where $<i,j>$ represents all nearest neighbors in the grid $L_D$.
+where $<i,j>$ represents the cliques of all two nearest neighbors in the grid $L_D$.
 
 We have a response likelihood model, and a Markov RF prior model, which is a conjugate prior model to the response likelihood model. We want to develop expressions for the posterior model on Gibbs and Markov formulation, so we begin by developing the joint distribution of the spatial variable of interest and the observations,
 \begin{equation*}
 \begin{split}
 \begin{bmatrix}\mathbf{l}\\\mathbf{d}\end{bmatrix} \sim &p(\mathbf{l},\mathbf{d}) = p(\mathbf{d}|\mathbf{l})p(\mathbf{l})\\
 &= const \times \prod_{i=1}^n p(d_i|l_i) \times \prod_{i=1}^n v_{0l}(l_i) \prod_{\mathbf{c}\in \mathbf{c}_L} v_{1\mathbf{c}}(l_j;j\in\mathbf{c})\\
-&= const \times \prod_{i=1,l_i=0}^n N(d_i;0.02,0.06^2) \prod_{i=1,l_i=1}^n N(d_i;0.08,0.06^2) \times \exp\Big(\beta\sum_{<i,j>} \sum_{l_i\in\mathbb{L}}I(l_i=l_j)\Big),
+&= const \times \prod_{i=1,l_i=0}^n N(d_i;0.02,0.06^2) \prod_{i=1,l_i=1}^n N(d_i;0.08,0.06^2) \times \exp\Big(\beta\sum_{<i,j>}I(l_i=l_j)\Big),
 \end{split}
 \end{equation*}
-
+IKKE DOBBEL SUM HER
 
 \begin{equation*}
 \begin{split}
@@ -261,17 +256,8 @@ for (i in 1:66){
   complit[i,] = rev(complit[i,])
 }
 
-#dlist = list(x = seq(1,50,length.out = 66), y = seq(1,50,length.out = 66), z = complit)
-#image.plot(dlist)
 x = rep(seq(1,66),66)
 y = rep(seq(1,66),each = 66)
-#plot_image <- function(l){
-#  mtrx3d <- data.frame(x = x, y = y, z = ifelse(as.vector(l), "Shale", "Sand"))
-#  mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
-#  mtrx.melt$value = as.factor(mtrx.melt$value)
-#  return(ggplot(mtrx.melt, aes(x = x, y = y, fill = value)) +
-#         geom_tile() + scale_fill_manual("Rock type", values=c("dark blue","dark red")) + coord_fixed(ratio=1))
-#}
 plot_image(complit)
 ```
 Then, we define the distribution of the vector $\mathbf{l}$, given the model parameter $\beta$,
@@ -287,7 +273,7 @@ which is inserted into the pseudo-likelihood, together with the distribution of 
 $$\hat{p}(\mathbf{d};\beta) \propto \prod_{i=1}^n \bigg[\sum_{l_i'\in\mathbb{L}}\exp\big(\beta\sum_{j\in\mathbf{n}_i}I(l_i'=l_j)\big)\bigg]^{-1}\times \exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_i=l_j)\Big).$$
 To find the optimal $\beta$, we maximize the logarithm of this pseudo-likelihood, giving
 $$\hat{\beta} = \underset{\beta}{\operatorname{arg max}} \{\log(\hat{p}(\mathbf{d};\beta)\} = \underset{\beta}{\operatorname{arg max}} \bigg\{\sum_{i=1}^n\bigg(\beta\big[\sum_{j\in\mathbf{n}_i}I(l_i=l_j)\big]-\log\Big[\sum_{l_i'\in\mathbb{L}}\exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_i=l_i)\Big)\Big]\bigg)\bigg\}.$$
-```{r, echo = F, eval = T, out.width = "33%"}
+```{r, echo = F, eval = T}
 complit.vec = as.vector(complit)
 neighbors = complit[c(66,1:65),] + complit[c(2:66,1),] + complit[,c(2:66,1)] + complit[,c(66,1:65)]
 neighbors.vec = as.vector(neighbors)
@@ -298,12 +284,6 @@ loglikelihood <- function(beta){
 }
 optimal = optim(1,loglikelihood, lower = 0)
 beta = optimal$par
-#plot(x= seq(0,3,length.out=1000), y =sapply(seq(0,3,length.out= 1000),loglikelihood))
-#equal.neighbors = complit.vec*neighbors.vec+(1-complit.vec)*(4-neighbors.vec)
-#dlist = list(x = seq(1,50,length.out = 66), y = seq(1,50,length.out = 66), z = neighbors)
-#image.plot(dlist)
-#dlist = list(x = seq(1,50,length.out=66),y=seq(1,50,length.out=66),z=matrix(equal.neighbors,ncol=66))
-#image.plot(dlist)
 ```
 We use wrapping boundary conditions on the data displayed in figure \ref{fig:complit} and estimate $\beta$ by the procedure above using the R function `optim()` to find the maximum pseudo-loglikelihood. This gives $\hat{\beta} =$ `r round(beta,2)`.
 
@@ -354,10 +334,6 @@ sim1 = simulate_posterior_proportions(beta, rep(1,75*75),iter)
 sim2 = simulate_posterior_proportions(beta, c(rep(0:1,floor(75*75/2)),1),iter)
 df = data.frame(x=1:iter,y1 = sim0, y2 = sim1, y3 = sim2)
 ggplot(data = df, aes(x=x)) + geom_line(aes(y = y1, col = "0 initial")) + geom_line(aes(y = y2, col = "1 initial")) + geom_line(aes(y = y3, col = "Chess board")) + theme_bw() + xlab("Iteration") + ylab("Proportion of l_i=1")
-#plot(x, sim0$proportion)
-#lines(x, sim1$proportion)
-#plot(x,sim0$proportion,type="l",col="red")
-#plot(x,sim1$proportion,col="green")
 #x = rep(seq(1,75),75)
 #y = rep(seq(1,75),each = 75)
 #plot_image(sim0$l)
@@ -372,7 +348,6 @@ mat = matrix(0,ncol = 75*75, nrow = 10)
 
 for (i in 1:10){
   mat[i,] = simulate_posterior(beta, mat[i,], 60000)
-  #print(i)
 }
 x = rep(seq(1,75),75)
 y = rep(seq(1,75),each = 75)
@@ -397,12 +372,13 @@ We simulate 100 independent realizations with 60000 iterations in each realizati
 
 ```{r, echo = F, eval = T, out.width = "33%"}
 simulations = 100
-iterations = 6000
+iterations = 60000
 mat = matrix(0,ncol = 75*75, nrow = simulations)
 
 for (i in 1:simulations){
   mat[i,] = simulate_posterior(beta, mat[i,], iterations)
 }
+
 Expected = apply(mat,2,mean)
 Var = Expected*(1-Expected)
 Mode <- function(x) {
@@ -419,7 +395,7 @@ ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value))
 
 mtrx3d <- data.frame(x = x, y = y, z = Var)
 mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
-ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value)) + scale_fill_gradientn(colours=color_table) + ggtitle("Variance of l binomial") + coord_fixed(ratio=1) +  theme(axis.title.x = element_blank(), axis.title.y = element_blank())
+ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value)) + scale_fill_gradientn(colours=color_table) + ggtitle("Variance of l") + coord_fixed(ratio=1) +  theme(axis.title.x = element_blank(), axis.title.y = element_blank())
 
 plot_image(MMAP) + ggtitle("Maximum marginal posterior predictor") + coord_fixed(ratio=1) +  theme(axis.title.x = element_blank(), axis.title.y = element_blank())
 ```
