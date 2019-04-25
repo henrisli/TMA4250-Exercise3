@@ -56,10 +56,10 @@ Since the $U_i$'s are all independent, $d_i$ depends only on $l_i$. Hence we get
 \begin{split}
 [\mathbf{d} | \mathbf{l}] \sim p(\mathbf{d}|\mathbf{l}) &= \prod_{i = 1}^n p(d_i | \mathbf{l}) = \prod_{i = 1}^n p(d_i | l_i) = \prod_{i = 1}^n
 \begin{cases}
-N(d_i; 0.02, 0.06^2) \ &\textrm{if} \ l_i = 0 \\
-N(d_i; 0.08, 0.06^2) \ &\textrm{if} \ l_i = 1
+\phi_1(d_i; 0.02, 0.06^2) \ &\textrm{if} \ l_i = 0 \\
+\phi_1(d_i; 0.08, 0.06^2) \ &\textrm{if} \ l_i = 1
 \end{cases} \\
-&= \prod_{i : l_i = 0} N(d_i; 0.02, 0.06^2) \prod_{i:l_i = 1} N(d_i; 0.08, 0.06^2).
+&= \prod_{i : l_i = 0} \phi_1(d_i; 0.02, 0.06^2) \prod_{i:l_i = 1} \phi_1(d_i; 0.08, 0.06^2).
 \end{split}
 \label{eq:lik}
 \end{equation}
@@ -88,19 +88,19 @@ $$
 where the expression for the likelihood $p(\mathbf{d}|\mathbf{l})$ is given in equation \ref{eq:lik}. This gives
 \begin{equation}
 \begin{split}
-p(\mathbf{l} | \mathbf{d}) &= \frac{ \prod_{i : l_i = 0} N(d_i; 0.02, 0.06^2) \prod_{i:l_i = 1} N(d_i; 0.08, 0.06^2) }{\sum_{\mathbf{k} \in \{0, 1\}^n} \prod_{i : k_i = 0} N(d_i; 0.02, 0.06^2) \prod_{i:k_i = 1} N(d_i; 0.08, 0.06^2) } \\
+p(\mathbf{l} | \mathbf{d}) &= \frac{ \prod_{i : l_i = 0} \phi_1(d_i; 0.02, 0.06^2) \prod_{i:l_i = 1} \phi_1(d_i; 0.08, 0.06^2) }{\sum_{\mathbf{k} \in \{0, 1\}^n} \prod_{i : k_i = 0} \phi_1(d_i; 0.02, 0.06^2) \prod_{i:k_i = 1} \phi_1(d_i; 0.08, 0.06^2) } \\
 &= \frac{ \prod_{i : l_i = 0} \exp\big(-\frac{1}{2\cdot 0.06^2}(d_i - 0.02)^2\big) \prod_{i:l_i = 1} \exp\big(-\frac{1}{2\cdot 0.06^2}(d_i - 0.08)^2\big)}{\sum_{\mathbf{k} \in \{0, 1\}^n} \prod_{i : k_i = 0} \exp\big(-\frac{1}{2\cdot 0.06^2}(d_i - 0.02)^2\big) \prod_{i:k_i = 1} \exp\big(-\frac{1}{2\cdot 0.06^2}(d_i - 0.08)^2\big) }\\
 &= \frac{ \exp\Big(-\frac{1}{2\cdot 0.06^2}\big(\sum_{i:l_i = 0}(d_i - 0.02)^2 + \sum_{i:l_i = 1} (d_i - 0.08)^2\big) \Big) }{\sum_{\mathbf{k} \in \{0, 1\}^n} \exp\big(-\frac{1}{2\cdot 0.06^2}\big(\sum_{i:k_i = 0}(d_i - 0.02)^2 + \sum_{i:k_i = 1} (d_i - 0.08)^2\big) \big)}
 \end{split}
 \end{equation}
 
 We want to simulate from the posterior Mosaic RF $\{l(\mathbf{x});\mathbf{x}\in L_D|\mathbf{d}\}$. Because we have an independent prior, each point in the Mosaic RF will be independent, and we get the following posterior distribution
-$$[l_i|d_i]\sim p(l_i|d_i) = \frac{p(d_i|l_i)}{\sum_{l_i'\in L} p(d_i|l_i')} = \begin{cases} \frac{N(d_i;0.02,0.06^2)}{N(d_i;0.02,0.06^2)+N(d_i;0.08,0.06^2)} = 1-p_i, &\text{if } l_i = 0,\\ \frac{N(d_i;0.08,0.06^2)}{N(d_i;0.02,0.06^2)+N(d_i;0.08,0.06^2)} = p_i, &\text{if } l_i = 1\end{cases}; i =1,\dots,n.$$
+$$[l_i|d_i]\sim p(l_i|d_i) = \frac{p(d_i|l_i)}{\sum_{l_i'\in L} p(d_i|l_i')} = \begin{cases} \frac{\phi_1(d_i;0.02,0.06^2)}{\phi_1(d_i;0.02,0.06^2)+\phi_1(d_i;0.08,0.06^2)} = 1-p_i, &\text{if } l_i = 0,\\ \frac{\phi_1(d_i;0.08,0.06^2)}{\phi_1(d_i;0.02,0.06^2)+\phi_1(d_i;0.08,0.06^2)} = p_i, &\text{if } l_i = 1\end{cases}; i =1,\dots,n.$$
 This means that $[l_i|d_i]$ will be Bernoulli distributed with probability $p_i$ as given above. We can simulate from the posterior distribution by simulating each point from a Bernoulli distribution with given $p_i$. Below, we display 10 realizations of the posterior Mosaic RF.
-```{r, echo = F, eval = T, out.width = "20%"}
+```{r, echo = F, eval = T, fig.align = "center", out.width = "40%", fig.cap = "One realisation of the posterior RF with constant prior"}
 # Algorithm to sample from model with independent prior
 # First, calculate all p_i's based on the observations
-p = dnorm(obs, 0.08, 0.06^2)/(dnorm(obs, 0.02, 0.06^2) + dnorm(obs, 0.08, 0.06^2))
+p = dnorm(obs, 0.08, 0.06)/(dnorm(obs, 0.02, 0.06) + dnorm(obs, 0.08, 0.06))
 # Number of points
 n = 75*75
 
@@ -112,36 +112,54 @@ plot_image <- function(l){
          geom_raster() + scale_fill_manual("Rock type", values=c("dark blue","dark red")) + coord_fixed(ratio=1) +  theme(axis.title.x = element_blank(), axis.title.y = element_blank()))
 }
 
-
 l = rbinom(n,1,p)
 plot_image(l)
+```
+
+
+```{r, echo = F, eval = T, fig.align = "center", out.width = "70%", fig.cap = "9 realisations of the posterior RF with constant prior"}
+plot_image <- function(l){
+  mtrx3d <- data.frame(x = x, y = y, z = ifelse(as.vector(l), "Shale", "Sand"))
+  mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
+  mtrx.melt$value = as.factor(mtrx.melt$value)
+  return(ggplot(mtrx.melt, aes(x = x, y = y, fill = value)) +
+         geom_raster() + coord_fixed(ratio=1)+ scale_fill_manual("Rock type", values=c("dark blue","dark red")) +  theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.y = element_text(size=4), axis.text.x = element_text(size=4)))
+}
+l = rbinom(n,1,p)
+p1 = plot_image(l)
 
 l = rbinom(n,1,p)
-plot_image(l)
+p2 = plot_image(l)
 
 l = rbinom(n,1,p)
-plot_image(l)
+p3 = plot_image(l)
 
 l = rbinom(n,1,p)
-plot_image(l)
+p4 = plot_image(l)
 
 l = rbinom(n,1,p)
-plot_image(l)
+p5 = plot_image(l)
 
 l = rbinom(n,1,p)
-plot_image(l)
+p6 = plot_image(l)
 
 l = rbinom(n,1,p)
-plot_image(l)
+p7 = plot_image(l)
 
 l = rbinom(n,1,p)
-plot_image(l)
+p8 = plot_image(l)
 
 l = rbinom(n,1,p)
-plot_image(l)
+p9 = plot_image(l)
 
-l = rbinom(n,1,p)
-plot_image(l)
+ggarrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, nrow = 3, ncol = 3)
+plot_image <- function(l){
+  mtrx3d <- data.frame(x = x, y = y, z = ifelse(as.vector(l), "Shale", "Sand"))
+  mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
+  mtrx.melt$value = as.factor(mtrx.melt$value)
+  return(ggplot(mtrx.melt, aes(x = x, y = y, fill = value)) +
+         geom_raster() + scale_fill_manual("Rock type", values=c("dark blue","dark red")) + coord_fixed(ratio=1) +  theme(axis.title.x = element_blank(), axis.title.y = element_blank()))
+}
 ```
 We see that they are all very similar, and they look reasonable when compared to the observations in figure \ref{fig:obs}. To expand on our analysis, we want to develop expressions for the expectation $E\{\mathbf{l}|\mathbf{d}\}$ and the variances in the diagonal terms of the matrix $\text{Var}\{\mathbf{l}|\mathbf{d}\}$.
 
@@ -166,8 +184,7 @@ ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value))
 plot_image(as.integer(round(p))) + ggtitle("Maximum marginal posterior predictor") + coord_fixed(ratio=1) +  theme(axis.title.x = element_blank(), axis.title.y = element_blank())
 ```
 
-COMMENT ON THE RESULTS
-INTERPRET $E(\mathbf{l}|\mathbf{d})$: $E(\mathbf{l}|\mathbf{d})$ is the function of $\mathbf{d}$ which, when predicting $l_i$, attains the minimum squared error. That is, $E(l_i - x)^2$, attains its minimum at $x = E(\mathbf{l_i | \mathbf{d}})$ when $x$ is constrained to be a function of $\mathbf{d}$.
+We see that the expectation value $E(\mathbf{l}|\mathbf{d})$ is identical to the observed data in figure \ref{fig:obs}, only on a different scale. This is what we would expect, because we have a constant prior, so all the information about the lithology $\mathbf{l}$ comes from the observed data. The expectation value can also be interpreted as the probability that a point has a value of $l_i=1$. Also, the variance is large over most of the domain, except for some minor areas where presumably the observed data either has a very large or small value. 
 
 ## c)
 We then consider a Markov RF prior model for $\{l(\mathbf{x});\mathbf{x}\in L_D\}$, represented by the $n$-vector $\mathbf{l}$, with a neighborhood system $\mathbf{n}_{L}$ consisting of the four closest neighbors of each grid node.
@@ -191,36 +208,37 @@ We have a response likelihood model, and a Markov RF prior model, which is a con
 \begin{split}
 \begin{bmatrix}\mathbf{l}\\\mathbf{d}\end{bmatrix} \sim &p(\mathbf{l},\mathbf{d}) = p(\mathbf{d}|\mathbf{l})p(\mathbf{l})\\
 &= const \times \prod_{i=1}^n p(d_i|l_i) \times \prod_{i=1}^n v_{0l}(l_i) \prod_{\mathbf{c}\in \mathbf{c}_L} v_{1\mathbf{c}}(l_j;j\in\mathbf{c})\\
-&= const \times \prod_{i=1,l_i=0}^n N(d_i;0.02,0.06^2) \prod_{i=1,l_i=1}^n N(d_i;0.08,0.06^2) \times \exp\Big(\beta\sum_{<i,j>}I(l_i=l_j)\Big),
+&= const \times \prod_{i=1,l_i=0}^n \phi_1(d_i;0.02,0.06^2) \prod_{i=1,l_i=1}^n \phi_1(d_i;0.08,0.06^2) \times \exp\Big(\beta\sum_{<i,j>}I(l_i=l_j)\Big).
 \end{split}
 \end{equation*}
-IKKE DOBBEL SUM HER
+
+To find the Gibbs formulation of the posterior model, we condition on $\mathbf{d}$ by dividing by $p(\mathbf{d})$, obtaining,
+\begin{equation*}
+\begin{split}
+[\mathbf{l}|\mathbf{d}]\sim &p(\mathbf{l}|\mathbf{d}) = [p(\mathbf{d})]^{-1}p(\mathbf{l},\mathbf{d})\\
+&= const \times \prod_{i=1,l_i=0}^n \phi_1(d_i;0.02,0.06^2) \prod_{i=1,l_i=1}^n \phi_1(d_i;0.08,0.06^2) \times \exp\Big(\beta\sum_{<i,j>}I(l_i=l_j)\Big).
+\end{split}
+\end{equation*}
+
+To obtain the Markov formulation, we take the joint distribution and for each $l_i$ condition on the other nodes $\mathbf{l}_{-i}$, to get,
 
 \begin{equation*}
 \begin{split}
 \bigg[\begin{matrix}l_i\\\mathbf{d}\end{matrix}\Big|\mathbf{l}_{-i}\bigg] \sim &p(l_i,\mathbf{d}|\mathbf{l}_{-i}) = p(\mathbf{d}|\mathbf{l})p(l_i|\mathbf{l}_{-i})\\
-&= const \times \prod_{i=1,l_i=0}^n N(d_i;0.02,0.06^2) \prod_{i=1,l_i=1}^n N(d_i;0.08,0.06^2) \times \exp\Big(\beta\sum_{j\in \mathbf{n}_i} I(l_i=l_j)\Big), \\
-&i = 1,2,\dots,n,
+&= const \times \prod_{i=1,l_i=0}^n \phi_1(d_i;0.02,0.06^2) \prod_{i=1,l_i=1}^n \phi_1(d_i;0.08,0.06^2) \times \exp\Big(\beta\sum_{j\in \mathbf{n}_i} I(l_i=l_j)\Big), \\
+&i = 1,2,\dots,n.
 \end{split}
 \end{equation*}
-where the former is the Gibbs formulation and the latter is the Markov formulation of the joint model. The posterior model for the Markov model formulation is obtained by first dividing by $p(\mathbf{d}_{-i}|\mathbf{l}_{-i})$ and further computing the normalizing constant as $[p(d_i|\mathbf{l}_{-i})]^{-1}$,
+The posterior model for the Markov model formulation is then obtained by first dividing by $p(\mathbf{d}_{-i}|\mathbf{l}_{-i})$ and further computing the normalizing constant as $[p(d_i|\mathbf{l}_{-i})]^{-1}$,
 \begin{equation*}
 \begin{split}
 \bigg[l_i\Big|\begin{matrix}\mathbf{d}\\\mathbf{l}_{-i}\end{matrix}\bigg] \sim &p(l_i|\mathbf{d},\mathbf{l}_{-i}) = p(l_i|d_i,l_j,j\in \mathbf{n}_i^l)\\
 &= \Bigg[\sum_{l_i'\in \mathbb{L}} p(d_i|l_i')v_{0l}(l_i')w_l(l_i'|l_j;j\in \mathbf{n}_i^l)\Bigg]^{-1}\times p(d_i|l_i) v_{0l}(l_i)w_l(l_i|l_j;j\in \mathbf{n}_i^l)\\
-&=\frac{p(d_i|l_i)\times \exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_i=l_j)\Big)}{N(d_i;0.02,0.06^2)\exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_j=0)\Big)+N(d_i;0.08,0.06^2)\exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_j=1)\Big)}\\
+&=\frac{p(d_i|l_i)\times \exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_i=l_j)\Big)}{\phi_1(d_i;0.02,0.06^2)\exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_j=0)\Big)+\phi_1(d_i;0.08,0.06^2)\exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_j=1)\Big)}\\
 &i = 1,2,\dots,n,
 \end{split}
 \end{equation*}
 with $p(d_i|l_i)$ as in equation \ref{eq:obs}.
-
-The corresponding expression for the posterior model on the Gibbs formulation will be,
-\begin{equation*}
-\begin{split}
-[\mathbf{l}|\mathbf{d}] \sim p(\mathbf{l}|\mathbf{d}) = ...
-\end{split}
-\end{equation*}
-
 
 To simulate realizations from $\{[l(\mathbf{x}|\mathbf{d}];\mathbf{x}\in L\}$, we need to use an iterative algorithm. The most frequently used algorithm is a McMC/Gibbs algorithm with a single-site proposal pdf based on the Markov formulation of the Markov RF. We implement the following algorithm:
 \begin{equation}
@@ -287,9 +305,9 @@ beta = optimal$par
 ```
 We use wrapping boundary conditions on the data displayed in figure \ref{fig:complit} and estimate $\beta$ by the procedure above using the R function `optim()` to find the maximum pseudo-loglikelihood. This gives $\hat{\beta} =$ `r round(beta,2)`.
 
-To assess the posterior model $p(\mathbf{l}|\mathbf{d})$ of the seismic data, we use algorithm \ref{eq:alg} to simulate from the posterior distribution. Because this is an MCMC algorithm, we need some way to justify that our algorithm has converged. To do this, we run three simulations, one starting with $\{l_i=0\}_{i=1,\dots,n}$, one starting with $\{l_i=1\}_{i=1,\dots,n}$ and one looking like a chess board. We then display the proportion of nodes with $l_i=1$ for each iteration in the algorithm. 
+To assess the posterior model $p(\mathbf{l}|\mathbf{d})$ of the seismic data, we use algorithm \ref{eq:alg} to simulate from the posterior distribution. Because this is an MCMC algorithm, we need some way to justify that our algorithm has converged. To do this, we run four simulations, one starting with $\{l_i=0\}_{i=1,\dots,n}$, one starting with $\{l_i=1\}_{i=1,\dots,n}$, one starting from the MMAP in section b) and one looking like a chess board. We then display the proportion of nodes with $l_i=1$ for each iteration in the algorithm. 
 
-```{r, echo = F, eval = T, out.width = "50%", fig.align = "center", fig.cap = "\\label{fig:convergence} Proportion of nodes with $l_i=1$ for three different MCMC chains, one starting with all $l_i=0$, one starting with all $l_i=1$ and one starting as a chess board."}
+```{r, echo = F, eval = T, out.width = "40%", fig.align = "center", fig.cap = "\\label{fig:convergence1} Proportion of nodes with $l_i=1$ for four different MCMC chains with $\\beta = 1.67$. Each loop consists of $75\\cdot75$ iterations."}
 calculate_neighbors = function(x){
   len = as.integer(sqrt(length(x)))
   mat = matrix(x, nrow = len)
@@ -305,7 +323,7 @@ simulate_posterior_proportions = function(beta, l_0, iterations){
     i = sample(1:n,1)
     neighbor = calculate_neighbors(l)[i]
     
-    p = dnorm(obs[i],0.08,0.06^2)*exp(beta*neighbor)/(dnorm(obs[i],0.02,0.06^2)*exp(beta*(4-neighbor)) + dnorm(obs[i],0.08,0.06^2)*exp(beta*neighbor))
+    p = dnorm(obs[i],0.08,0.06)*exp(beta*neighbor)/(dnorm(obs[i],0.02,0.06)*exp(beta*(4-neighbor)) + dnorm(obs[i],0.08,0.06)*exp(beta*neighbor))
 
     l[i] = rbinom(1,1,p)
     proportion[j] = sum(l)/n
@@ -314,6 +332,33 @@ simulate_posterior_proportions = function(beta, l_0, iterations){
   return(proportion)
 }
 
+loops = 25
+iter = 75*75*loops
+
+sim1 = simulate_posterior_proportions(beta, rep(1,75*75),iter)
+sim2 = simulate_posterior_proportions(beta, rep(0,75*75),iter)
+sim3 = simulate_posterior_proportions(beta, c(rep(0:1,2812),0),iter)
+sim4 = simulate_posterior_proportions(beta, round(p), iter)
+
+df = data.frame(x=seq(0,loops,length.out = 75*75*loops),y1 = sim1, y2 = sim2, y3 = sim3, y4 = sim4)
+ggplot(data = df, aes(x=x)) + geom_line(aes(y = y1, col = "All l_i = 1")) + geom_line(aes(y = y2, col = "All l_i = 0")) + geom_line(aes(y = y3, col = "Chess board")) + geom_line(aes(y = y4, col = "MMAP")) + theme_bw() + xlab("Loops") + ylab("Proportion of l_i=1")
+```
+From figure \ref{fig:convergence1}, we see that the MCMCs starting with all $l_i=0$ and all $l_i=1$ get stuck and do not converge. We suspect that this is a result of $\beta$ being too large. If we compare the training data set \ref{fig:complit} with the seismic data \ref{fig:obs} and the predicitons from section b), we see that the training data maybe has too little spread and a too "compact" structure. To account for this, we reduce the the estimated parameter somewhat, and let $\beta=1.4$, which should in theory produce results with more spread. We then run the same algorithm and display four MCMCs with the same initial values as above.
+
+```{r, echo = F, eval = T, out.width = "40%", fig.align = "center", fig.cap = "\\label{fig:convergence2} Proportion of nodes with $l_i=1$ for four different MCMC chains with $\\beta = 1.4$. Each loop consists of $75\\cdot75$ iterations."}
+beta = 1.4
+
+sim1 = simulate_posterior_proportions(beta, rep(1,75*75),iter)
+sim2 = simulate_posterior_proportions(beta, rep(0,75*75),iter)
+sim3 = simulate_posterior_proportions(beta, c(rep(0:1,2812),0),iter)
+sim4 = simulate_posterior_proportions(beta, round(p), iter)
+
+df = data.frame(x=seq(0,loops,length.out = 75*75*loops),y1 = sim1, y2 = sim2, y3 = sim3, y4 = sim4)
+ggplot(data = df, aes(x=x)) + geom_line(aes(y = y1, col = "All l_i = 1")) + geom_line(aes(y = y2, col = "All l_i = 0")) + geom_line(aes(y = y3, col = "Chess board")) + geom_line(aes(y = y4, col = "MMAP")) + theme_bw() + xlab("Loops") + ylab("Proportion of l_i=1")
+```
+
+From figure \ref{fig:convergence2} we see that the chain still gets stuck in $\mathbf{l}=\mathbf{0}$ and converges slowly, although somewhat faster than for $\beta=1.67$. We therefore procede with $\beta=1.4$. We use 15 loops and use as initial $\mathbf{l}^0$ the MMAP from section b). This MMAP is our best best estimate so far, and will therefore be our best hope of the MCMC converging in feasible time. We then display 9 independent realizations as maps.
+```{r, echo = F, eval = T, fig.align = "center", out.width = "70%", fig.cap = "\\label{fig:real}9 realisations of the posterior RF with Markov RF prior model"}
 simulate_posterior = function(beta, l_0, iterations){
   l = l_0
   n = length(l_0)
@@ -321,62 +366,63 @@ simulate_posterior = function(beta, l_0, iterations){
     i = sample(1:n,1)
     neighbor = calculate_neighbors(l)[i]
     
-    p = dnorm(obs[i],0.08,0.06^2)*exp(beta*neighbor)/(dnorm(obs[i],0.02,0.06^2)*exp(beta*(4-neighbor)) + dnorm(obs[i],0.08,0.06^2)*exp(beta*neighbor))
+    p = dnorm(obs[i],0.08,0.06)*exp(beta*neighbor)/(dnorm(obs[i],0.02,0.06)*exp(beta*(4-neighbor)) + dnorm(obs[i],0.08,0.06)*exp(beta*neighbor))
 
     l[i] = rbinom(1,1,p)
   }
   return(l)
 }
+mat = matrix(0,ncol = 75*75, nrow = 9)
 
-iter = 80000
-sim0 = simulate_posterior_proportions(beta, rep(0,75*75),iter)
-sim1 = simulate_posterior_proportions(beta, rep(1,75*75),iter)
-sim2 = simulate_posterior_proportions(beta, c(rep(0:1,floor(75*75/2)),1),iter)
-df = data.frame(x=1:iter,y1 = sim0, y2 = sim1, y3 = sim2)
-ggplot(data = df, aes(x=x)) + geom_line(aes(y = y1, col = "0 initial")) + geom_line(aes(y = y2, col = "1 initial")) + geom_line(aes(y = y3, col = "Chess board")) + theme_bw() + xlab("Iteration") + ylab("Proportion of l_i=1")
-#x = rep(seq(1,75),75)
-#y = rep(seq(1,75),each = 75)
-#plot_image(sim0$l)
-#plot_image(sim1$l)
-```
-
-From figure \ref{fig:convergence}, we see that after about 60000 iterations, the algorithm seems to converge. Going forward, when simulating from the posterior distribution, we therefore use 60000 iterations in the MCMC chain.
-
-We then display 10 independent realizations as maps below.
-```{r, echo = F, eval = T, out.width = "20%"}
-mat = matrix(0,ncol = 75*75, nrow = 10)
-
-for (i in 1:10){
-  mat[i,] = simulate_posterior(beta, mat[i,], 60000)
+for (i in 1:9){
+  mat[i,] = round(p)
+  mat[i,] = simulate_posterior(1.4, mat[i,], 75*75*15)
 }
 x = rep(seq(1,75),75)
 y = rep(seq(1,75),each = 75)
-plot_image(mat[1,])
-plot_image(mat[2,])
-plot_image(mat[3,])
-plot_image(mat[4,])
-plot_image(mat[5,])
-plot_image(mat[6,])
-plot_image(mat[7,])
-plot_image(mat[8,])
-plot_image(mat[9,])
-plot_image(mat[10,])
+plot_image <- function(l){
+  mtrx3d <- data.frame(x = x, y = y, z = ifelse(as.vector(l), "Shale", "Sand"))
+  mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
+  mtrx.melt$value = as.factor(mtrx.melt$value)
+  return(ggplot(mtrx.melt, aes(x = x, y = y, fill = value)) +
+         geom_raster() + coord_fixed(ratio=1)+ scale_fill_manual("Rock type", values=c("dark blue","dark red")) +  theme(legend.position = "none", axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.y = element_text(size=4), axis.text.x = element_text(size=4)))
+}
+p1 = plot_image(mat[1,])
+p2 = plot_image(mat[2,])
+p3 = plot_image(mat[3,])
+p4 = plot_image(mat[4,])
+p5 = plot_image(mat[5,])
+p6 = plot_image(mat[6,])
+p7 = plot_image(mat[7,])
+p8 = plot_image(mat[8,])
+p9 = plot_image(mat[9,])
+
+
+ggarrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, nrow = 3, ncol = 3)
+plot_image <- function(l){
+  mtrx3d <- data.frame(x = x, y = y, z = ifelse(as.vector(l), "Shale", "Sand"))
+  mtrx.melt <- melt(mtrx3d, id.vars = c("x","y"), measure.vars = "z")
+  mtrx.melt$value = as.factor(mtrx.melt$value)
+  return(ggplot(mtrx.melt, aes(x = x, y = y, fill = value)) +
+         geom_raster() + scale_fill_manual("Rock type", values=c("dark blue","dark red")) + coord_fixed(ratio=1) +  theme(axis.title.x = element_blank(), axis.title.y = element_blank()))
+}
 ```
-To the human eye, these look identical to the first model with constant prior.(ADDITIONAL COMMENTS) So, to further investigate our new model, we look at $E(\mathbf{l}|\mathbf{d})$, the diagonal terms of $\text{Var}(\mathbf{l}|\mathbf{d})$ and the prediction $\hat{\mathbf{l}} = \text{MMAP}(\mathbf{l}|\mathbf{d})$ through simulating several independent Markov RFs and then assessing these by counting estimators.
+From figure \ref{fig:real} we see that all the realisations have a compact body of shale in the topright corner, with some minor spreads of shale elsewhere. To further investigate our new model, we look at $E(\mathbf{l}|\mathbf{d})$, the diagonal terms of $\text{Var}(\mathbf{l}|\mathbf{d})$ and the prediction $\hat{\mathbf{l}} = \text{MMAP}(\mathbf{l}|\mathbf{d})$ through simulating several independent Markov RFs and then assessing these by counting estimators.
 
 For the expectation and variance we get,
 $$E(l_i|d_i) = p_i = \frac{1}{n_s}\sum_{s=1}^{n_s}l_i^s, \quad \text{Var}(l_i|d_i) = p_i(1-p_i).$$
 For the $\text{MMAP}(\mathbf{l}|\mathbf{d})$, this will be for each node $l_i$ the mode of all the $n_s$ samples, or
 $$\hat{l_i} = \text{Mode}\big(\{l_i^s\}_{s=1,\dots,n_s}\big) = \max_{l_i'\in\mathbb{L}} \sum_{s=1}^{n_s}I(l_i'=l_i^s).$$
-We simulate 100 independent realizations with 60000 iterations in each realization and then display the above characteristics as maps.
+We simulate 100 independent realizations with 15 loops in each realization and then display the above characteristics as maps.
 
 ```{r, echo = F, eval = T, out.width = "33%"}
 simulations = 100
-iterations = 60000
+iterations = 75*75*15
 mat = matrix(0,ncol = 75*75, nrow = simulations)
 
 for (i in 1:simulations){
-  mat[i,] = simulate_posterior(beta, mat[i,], iterations)
+  mat[i,] = round(p)
+  mat[i,] = simulate_posterior(1.4, mat[i,], iterations)
 }
 
 Expected = apply(mat,2,mean)
@@ -399,7 +445,7 @@ ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value))
 
 plot_image(MMAP) + ggtitle("Maximum marginal posterior predictor") + coord_fixed(ratio=1) +  theme(axis.title.x = element_blank(), axis.title.y = element_blank())
 ```
-MAKE SOME COMMENTS ABOUT THE PLOTS
+As opposed to the model with constant prior, the expectation of this model is not equal to the observed data. The expectation has a solid body with value close to 1 in the top right part of the domain. The variance is approximately zero everywhere, except on the edge of the body and in a small area in the bottom of the domain. The MMAP is zero everywhere, except for the solid body in the top right.
 
 ## d)
-MAKE SOME COMMENTS TO COMPARE THE MODELS
+Comparing the two models, we see that the constant prior model has much higher variance in its prediction and a much larger spread in the MMAP and expectation. From the model specifications, it is clear that the Marov RF prior gives a larger probability of two neighbors having equal value. Hence, we get less spread in the prediction and only one large body of shale, as opposed to several smaller areas of shale. By reducing the value of $\beta$, the Markov RF prior model would resemble the constant prior more and get a larger spread.
