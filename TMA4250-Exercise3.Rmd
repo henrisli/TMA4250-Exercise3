@@ -412,7 +412,7 @@ From figure \ref{fig:real} we see that all the realisations have a compact body 
 For the expectation and variance we get,
 $$E(l_i|d_i) = p_i = \frac{1}{n_s}\sum_{s=1}^{n_s}l_i^s, \quad \text{Var}(l_i|d_i) = p_i(1-p_i).$$
 For the $\text{MMAP}(\mathbf{l}|\mathbf{d})$, this will be for each node $l_i$ the mode of all the $n_s$ samples, or
-$$\hat{l_i} = \text{Mode}\big(\{l_i^s\}_{s=1,\dots,n_s}\big) = \max_{l_i'\in\mathbb{L}} \sum_{s=1}^{n_s}I(l_i'=l_i^s).$$
+$$\hat{l_i} = \text{Mode}\big(\{l_i^s\}_{s=1,\dots,n_s}\big) = \underset{l'_i\in\mathbb{L}}{\operatorname{arg max}} \bigg[\sum_{s=1}^{n_s}I(l_i'=l_i^s)\bigg].$$
 We simulate 100 independent realizations with 15 loops in each realization and then display the above characteristics as maps.
 
 ```{r, echo = F, eval = T, out.width = "33%"}
