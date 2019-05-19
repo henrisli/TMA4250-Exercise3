@@ -36,7 +36,7 @@ library(spatial)
 
 This problem is based on observations of seismic data over a domain $\mathcal{D}\subset \mathbb{R}^2$. The objective is to identify the underlying {sand, shale} lithology distribution over $\mathcal{D}$, represented by $\{0, 1\}$ respectively. 
 
-The observations are collected on a regular $(75 \times 75)$ grid $L_D$, and the seismic data are denoted $\{d(\mathbf{x}); \mathbf{x} \in L_D\};d(\mathbf{x})\in \mathbb{R}$, represented by the $n$-vector $\mathbf{d}$. We retrieve the observations from the R library MASS in the file _seismic.dat_. 
+The observations are collected on a regular $(75 \times 75)$ grid $L_D$, and the seismic data are denoted $\{d(\mathbf{x}); \mathbf{x} \in L_D\};d(\mathbf{x})\in \mathbb{R}$, represented by the $n$-vector $\mathbf{d}\in \mathbb{R}^n$. We retrieve the observations from the R library MASS in the file _seismic.dat_. 
 
 Moreover, observations of the lithology distribution {sand, shale} in a geologically comparable domain $\mathcal{D}_c \subset \mathbb{R}^2$ is available. The lithology distribution is collected on a regular $(66\times 66)$ grid $L_{D_c}$, which has the same spacing as $L_D$ over $\mathcal{D}_c$. Here, we retrieve the observations from the same R library MASS in the file _complit.dat_.
 
