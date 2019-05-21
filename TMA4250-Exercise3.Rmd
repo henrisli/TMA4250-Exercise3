@@ -5,7 +5,7 @@ output:
     toc: no
     toc_depth: '2'
 date: "`r format(Sys.time(), '%d.%m.%Y')`"
-subtitle: 'Group members: Henrik Syversveen Lie, Øyvind Auestad'
+subtitle: 'Candidate number: 10017'
 header-includes: \usepackage{float}
 ---
 
@@ -77,7 +77,7 @@ ggplot(mtrx.melt, aes(x = x, y = y, z = value)) + geom_raster(aes(fill = value))
 
 ## b)
 
-We now give $\mathbf{l}$ a uniform constant prior, i.e. $p(\mathbf{l}) = \textrm{const}$. We obtain the following posterior model
+Initially, we give $\mathbf{l}$ a uniform constant prior, i.e. $p(\mathbf{l}) = \textrm{const}$. We obtain the following posterior model
 $$
 [\mathbf{l} | \mathbf{d}] \sim p(\mathbf{l}|\mathbf{d}) = \frac{p(\mathbf{d} | \mathbf{l})}{\sum_{\mathbf{l}' \in \mathbb{L}^n} p(\mathbf{d} | \mathbf{l}')},
 $$
@@ -184,7 +184,7 @@ plot_image(as.integer(round(p))) + ggtitle("Maximum marginal posterior predictor
 We see that the expectation value $E(\mathbf{l}|\mathbf{d})$ is identical to the observed data in figure \ref{fig:obs}, only on a different scale. This is what we would expect, because we have a constant prior, so all the information about the lithology $\mathbf{l}$ comes from the observed data. The expectation value can also be interpreted as the probability that a point has a value of $l_i=1$. Also, the variance is large over most of the domain, except for some minor areas where presumably the observed data either has a very large or small value. 
 
 ## c)
-We then consider a Markov RF prior model for $\{l(\mathbf{x});\mathbf{x}\in L_D\}$, represented by the $n$-vector $\mathbf{l}$, with a neighborhood system $\mathbf{n}_{L}$ consisting of the four closest neighbors of each grid node.
+We then consider a different prior model for $\{l(\mathbf{x});\mathbf{x}\in L_D\}$, namely a Markov RF prior model represented by the $n$-vector $\mathbf{l}$, with a neighborhood system $\mathbf{n}_{L}$ consisting of the four closest neighbors of each grid node.
 
 The Markov formulation of the RF is,
 $$p(l_i|l_j;j\in \mathbf{n}_i) = const \times \exp\Big(\beta\sum_{j\in \mathbf{n}_i}I(l_i=l_j)\Big);i=1,\dots,n,$$
@@ -340,7 +340,7 @@ sim4 = simulate_posterior_proportions(beta, round(p), iter)
 df = data.frame(x=seq(0,loops,length.out = 75*75*loops),y1 = sim1, y2 = sim2, y3 = sim3, y4 = sim4)
 ggplot(data = df, aes(x=x)) + geom_line(aes(y = y1, col = "All l_i = 1")) + geom_line(aes(y = y2, col = "All l_i = 0")) + geom_line(aes(y = y3, col = "Chess board")) + geom_line(aes(y = y4, col = "MMAP")) + theme_bw() + xlab("Loops") + ylab("Proportion of l_i=1")
 ```
-From figure \ref{fig:convergence1}, we see that the MCMCs starting with all $l_i=0$ and all $l_i=1$ get stuck and do not converge. We suspect that this is a result of $\beta$ being too large. If we compare the training data set in figure \ref{fig:complit} with the seismic data in figure \ref{fig:obs} and the predicitons from section b), we see that the training data maybe has too little spread and a too "compact" structure. To account for this, we reduce the the estimated parameter somewhat, and let $\beta=1.4$, which should in theory produce results with more spread. We then run the same algorithm and display four MCMCs with the same initial values as above.
+From figure \ref{fig:convergence1}, we see that the MCMCs starting with all $l_i=0$ and all $l_i=1$ get stuck and do not converge. We suspect that this is a result of $\beta$ being too large, because larger $\beta$ gives greater probability of two neighbours being equal. If we compare the training data set in figure \ref{fig:complit} with the seismic data in figure \ref{fig:obs} and the predicitons from section b), we see that the training data maybe has too little spread and a too "compact" structure. To account for this, we reduce the the estimated parameter somewhat, and let $\beta=1.4$, which should in theory produce results with more spread. We then run the same algorithm and display four MCMCs with the same initial values as above.
 
 ```{r, echo = F, eval = T, out.width = "40%", fig.align = "center", fig.cap = "\\label{fig:convergence2} Proportion of nodes with $l_i=1$ for four different MCMC chains with $\\beta = 1.4$. Each loop consists of $75\\cdot75$ iterations."}
 beta = 1.4
@@ -357,18 +357,19 @@ ggplot(data = df, aes(x=x)) + geom_line(aes(y = y1, col = "All l_i = 1")) + geom
 From figure \ref{fig:convergence2} we see that the chain still gets stuck in $\mathbf{l}^0=\mathbf{0}$ and converges slowly, although somewhat faster than for $\beta=1.67$. We therefore procede with $\beta=1.4$. We use 15 loops and use as initial $\mathbf{l}^0$ the MMAP from section b). This MMAP is our best best estimate so far, and will therefore be our best hope of the MCMC converging in feasible time. We then display 9 independent realizations as maps in figure \ref{fig:real}.
 ```{r, echo = F, eval = T, fig.align = "center", out.width = "70%", fig.cap = "\\label{fig:real}9 realisations of the posterior RF with Markov RF prior model"}
 simulate_posterior = function(beta, l_0, iterations){
-  l = l_0
-  n = length(l_0)
-  for (j in 1:iterations){
-    i = sample(1:n,1)
-    neighbor = calculate_neighbors(l)[i]
-    
-    p = dnorm(obs[i],0.08,0.06)*exp(beta*neighbor)/(dnorm(obs[i],0.02,0.06)*exp(beta*(4-neighbor)) + dnorm(obs[i],0.08,0.06)*exp(beta*neighbor))
+ l = l_0
+ n = length(l_0)
+ for (j in 1:iterations){
+   i = sample(1:n,1)
+   neighbor = calculate_neighbors(l)[i]
 
-    l[i] = rbinom(1,1,p)
-  }
-  return(l)
+   p = dnorm(obs[i],0.08,0.06)*exp(beta*neighbor)/(dnorm(obs[i],0.02,0.06)*exp(beta*(4-neighbor)) + dnorm(obs[i],0.08,0.06)*exp(beta*neighbor))
+
+   l[i] = rbinom(1,1,p)
+ }
+ return(l)
 }
+
 mat = matrix(0,ncol = 75*75, nrow = 9)
 
 for (i in 1:9){
