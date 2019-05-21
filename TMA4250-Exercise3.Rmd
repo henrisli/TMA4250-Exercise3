@@ -83,7 +83,7 @@ $$
 $$
 where the expression for the likelihood $p(\mathbf{d}|\mathbf{l})$ is given in equation \ref{eq:lik}. This gives the following posterior model
 \begin{equation}
-p(\mathbf{l} | \mathbf{d}) = \frac{ \prod_{i =1}^n \Big(\phi_1(d_i; 0.02, 0.06^2)I(l_i=0) + \phi_1(d_i; 0.08, 0.06^2)I(l_i=1)\Big) }{\sum_{\mathbf{l'} \in \mathbb{L}^n} \Big[\prod_{i =1}^n \big(\phi_1(d_i; 0.02, 0.06^2)I(l_i'=0) + \phi_1(d_i; 0.08, 0.06^2) I(l_i'=1)\big)\Big]} 
+p(\mathbf{l} | \mathbf{d}) = \frac{ \prod_{i =1}^n \Big(\phi_1(d_i; 0.02, 0.06^2)I(l_i=0) + \phi_1(d_i; 0.08, 0.06^2)I(l_i=1)\Big) }{\sum_{\mathbf{l'} \in \mathbb{L}^n} \Big[\prod_{i =1}^n \big(\phi_1(d_i; 0.02, 0.06^2)I(l_i'=0) + \phi_1(d_i; 0.08, 0.06^2) I(l_i'=1)\big)\Big]}.
 \end{equation}
 <!---
 #= \frac{ \prod_{i : l_i = 0} \exp\big(-\frac{1}{2\cdot 0.06^2}(d_i - 0.02)^2\big) \prod_{i:l_i = 1} \exp\big(-\frac{1}{2\cdot 0.06^2}(d_i - 0.08)^2\big)}{\sum_{\mathbf{k} \in \{0, 1\}^n} \prod_{i : k_i = 0} \exp\big(-\frac{1}{2\cdot 0.06^2}(d_i - 0.02)^2\big) \prod_{i:k_i = 1} \exp\big(-\frac{1}{2\cdot 0.06^2}(d_i - 0.08)^2\big) }\\
@@ -222,7 +222,7 @@ To obtain the Markov formulation, we take the joint distribution and for each $l
 \begin{equation*}
 \begin{split}
 \bigg[\begin{matrix}l_i\\\mathbf{d}\end{matrix}\Big|\mathbf{l}_{-i}\bigg] \sim &p(l_i,\mathbf{d}|\mathbf{l}_{-i}) = p(\mathbf{d}|\mathbf{l})p(l_i|\mathbf{l}_{-i})\\
-&= const \times \prod_{i=1}^n \Big(\phi_1(d_i;0.02,0.06^2) I(l_i=0) + \phi_1(d_i;0.08,0.06^2) I(l_i=1)\Big)\times \exp\Big(\beta\sum_{<i,j>}I(l_i=l_j)\Big), \\
+&= const \times \prod_{i=1}^n \Big(\phi_1(d_i;0.02,0.06^2) I(l_i=0) + \phi_1(d_i;0.08,0.06^2) I(l_i=1)\Big)\times \exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_i=l_j)\Big), \\
 &i = 1,2,\dots,n.
 \end{split}
 \end{equation*}
@@ -277,7 +277,7 @@ plot_image(complit)
 ```
 Then, we define the distribution of the vector $\mathbf{l}$, given the model parameter $\beta$, as a Gibbs formulation of a Markov RF,
 
-$$\mathbf{l}\sim p(\mathbf{l};\beta) = const \times \prod_{i=1}^n \exp\Big(\beta \sum_{j\in \mathbf{n}_i}I(l_i=l_j)\Big).$$
+$$\mathbf{l}\sim p(\mathbf{l};\beta) = const \times \exp\Big(\beta \sum_{<i,j>}I(l_i=l_j)\Big).$$
 Ideally, we would like to use this distribution to estimate $\beta$, but the normalizing constant is difficult to assess because we have to sum over $2^n$ terms, which is not computanionally feasible. As an alternative, we define the distribution as a Markov formulation,
 $$[l_i|l_j,\beta;j\in \mathbf{n}_i] \sim p(l_i|l_j,\beta;j\in\mathbf{n}_i) = \bigg[\sum_{l_i'\in\mathbb{L}}\exp\big(\beta\sum_{j\in\mathbf{n}_i}I(l_i'=l_j)\big)\bigg]^{-1}\times \exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_i=l_j)\Big).$$
 Then, we can define the pseudo-likelihood of observing the data, given the parameter $\beta$, as the product of these univariate distributions,
@@ -446,4 +446,4 @@ plot_image(MMAP) + ggtitle("Maximum marginal posterior predictor") + coord_fixed
 As opposed to the model with constant prior, the expectation of this model is not equal to the observed data. The expectation has a solid body with value close to 1 in the top right part of the domain. The variance is approximately zero everywhere, except on the edge of the body and in a small area in the bottom of the domain. The MMAP is zero everywhere, except for the solid body in the top right.
 
 ## d)
-Comparing the two models, we see that the constant prior model has much higher variance in its prediction and a much larger spread in the MMAP and expectation. From the model specifications, it is clear that the MarKov RF prior gives a larger probability of two neighbors having equal value. Hence, we get less spread in the prediction and only one large body of shale, as opposed to several smaller areas of shale. The parameter $\beta$ in the Markov RF prior was estimated by a dataset containing one large body of shale, and only a few other small areas of shale. It is then logical for the posterior to only have one large body of shale, even though we reduced $\beta$ somewhat. By reducing the value of $\beta$ even more, the Markov RF prior model would resemble the constant prior more and get a larger spread.
+Comparing the two models, we see that the constant prior model has much higher variance in its prediction and a much larger spread in the MMAP and expectation. From the model specifications, it is clear that the Markov RF prior gives a larger probability of two neighbors having equal value. Hence, we get less spread in the prediction and only one large body of shale, as opposed to several smaller areas of shale. The parameter $\beta$ in the Markov RF prior was estimated by a dataset containing one large body of shale, and only a few other small areas of shale. It is then logical for the posterior to only have one large body of shale, even though we reduced $\beta$ somewhat. By reducing the value of $\beta$ even more, the Markov RF prior model would resemble the constant prior more and get a larger spread.
