@@ -222,7 +222,7 @@ To obtain the Markov formulation, we take the joint distribution and for each $l
 \begin{equation*}
 \begin{split}
 \bigg[\begin{matrix}l_i\\\mathbf{d}\end{matrix}\Big|\mathbf{l}_{-i}\bigg] \sim &p(l_i,\mathbf{d}|\mathbf{l}_{-i}) = p(\mathbf{d}|\mathbf{l})p(l_i|\mathbf{l}_{-i})\\
-&= const \times \prod_{i=1}^n \Big(\phi_1(d_i;0.02,0.06^2) I(l_i=0) + \phi_1(d_i;0.08,0.06^2) I(l_i=1)\Big)\times \exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_i=l_j)\Big), \\
+&= const \times \prod_{i=1}^n \Big(\phi_1(d_i;0.02,0.06^2) I(l_i=0) + \phi_1(d_i;0.08,0.06^2) I(l_i=1)\Big) \exp\Big(\beta\sum_{j\in\mathbf{n}_i}I(l_i=l_j)\Big), \\
 &i = 1,2,\dots,n.
 \end{split}
 \end{equation*}
